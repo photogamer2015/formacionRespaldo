@@ -1,0 +1,352 @@
+{% extends 'base.html' %}
+
+{% block title %}Registro Administrativo — {{ mes_nombre }} {{ anio }}{% endblock %}
+
+{% block extra_head %}
+<style>
+@media print {
+    /* Ocultar todo lo que no es contenido */
+    header.top, .crumb, .no-print, .btn, form, button {
+        display: none !important;
+    }
+    body { background: white !important; }
+    .container { max-width: 100% !important; padding: 0 !important; }
+    .card-box {
+        box-shadow: none !important;
+        border: 1px solid #ddd !important;
+        page-break-inside: avoid;
+        margin-bottom: 12px !important;
+    }
+    .page-title { color: #1a237e !important; font-size: 18pt !important; }
+    .page-subtitle { font-size: 11pt !important; }
+    /* Que el banner azul histórico se imprima con su color */
+    [style*="linear-gradient"] {
+        background: #1a237e !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+    }
+    /* Forzar colores en KPIs */
+    * {
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+    }
+    /* El gráfico canvas se imprime */
+    canvas { max-width: 100% !important; }
+    /* Tablas legibles */
+    table { font-size: 10pt !important; }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="crumb">
+    <a href="{% url 'academia:bienvenida' %}">Inicio</a> &nbsp;›&nbsp; Registro Administrativo
+</div>
+
+<div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:14px; margin-bottom:20px;">
+    <div>
+        <h2 class="page-title">📊 Registro Administrativo</h2>
+        <p class="page-subtitle">Balance financiero de <strong>{{ mes_nombre }} {{ anio }}</strong> · {{ desde|date:"d/m/Y" }} – {{ hasta|date:"d/m/Y" }}</p>
+    </div>
+    <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
+        <form method="get" style="display:flex; gap:6px; align-items:center;">
+            <select name="anio" class="form-input" style="padding:6px 10px;">
+                {% for opt in meses_selector %}
+                    {% ifchanged opt.anio %}
+                        <option value="{{ opt.anio }}" {% if opt.anio == anio %}selected{% endif %}>{{ opt.anio }}</option>
+                    {% endifchanged %}
+                {% endfor %}
+            </select>
+            <select name="mes" class="form-input" style="padding:6px 10px;">
+                <option value="1" {% if mes == 1 %}selected{% endif %}>Enero</option>
+                <option value="2" {% if mes == 2 %}selected{% endif %}>Febrero</option>
+                <option value="3" {% if mes == 3 %}selected{% endif %}>Marzo</option>
+                <option value="4" {% if mes == 4 %}selected{% endif %}>Abril</option>
+                <option value="5" {% if mes == 5 %}selected{% endif %}>Mayo</option>
+                <option value="6" {% if mes == 6 %}selected{% endif %}>Junio</option>
+                <option value="7" {% if mes == 7 %}selected{% endif %}>Julio</option>
+                <option value="8" {% if mes == 8 %}selected{% endif %}>Agosto</option>
+                <option value="9" {% if mes == 9 %}selected{% endif %}>Septiembre</option>
+                <option value="10" {% if mes == 10 %}selected{% endif %}>Octubre</option>
+                <option value="11" {% if mes == 11 %}selected{% endif %}>Noviembre</option>
+                <option value="12" {% if mes == 12 %}selected{% endif %}>Diciembre</option>
+            </select>
+            <button type="submit" class="btn btn-primary btn-sm">Ver</button>
+        </form>
+        <a href="{% url 'academia:admin_egresos_lista' %}" class="btn btn-secondary">📒 Ver todos los egresos</a>
+        <a href="{% url 'academia:admin_egreso_crear' %}" class="btn btn-success">+ Nuevo egreso</a>
+        <a href="{% url 'academia:admin_export_reporte' %}?anio={{ anio }}&mes={{ mes }}"
+           class="btn btn-secondary no-print" title="Descargar reporte en CSV (abre con Excel)">📥 Exportar</a>
+        <button type="button" onclick="window.print()" class="btn btn-secondary no-print">🖨️ Imprimir</button>
+    </div>
+</div>
+
+{# ─── KPIs del mes ─────────────────────────────────────── #}
+<div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap:14px; margin-bottom:20px;">
+    {# Ingresos #}
+    <div class="card-box" style="border-top:4px solid #2e7d32; padding:18px;">
+        <div style="font-size:11px; color:#888; font-weight:600; text-transform:uppercase; letter-spacing:0.5px;">📈 Ingresos del mes</div>
+        <div style="font-size:28px; font-weight:700; color:#2e7d32; margin:8px 0 4px;">${{ ingresos.total|floatformat:2 }}</div>
+        <div style="font-size:11px; color:#666;">
+            Abonos: <strong>${{ ingresos.abonos|floatformat:2 }}</strong> ·
+            Ventas: <strong>${{ ingresos.ventas|floatformat:2 }}</strong>
+        </div>
+        {% if var_ingresos is not None %}
+            <div style="margin-top:8px; font-size:11px; color:{% if var_ingresos >= 0 %}#2e7d32{% else %}#c62828{% endif %};">
+                {% if var_ingresos >= 0 %}▲{% else %}▼{% endif %} {{ var_ingresos|floatformat:1 }}% vs mes anterior
+            </div>
+        {% endif %}
+    </div>
+
+    {# Egresos #}
+    <div class="card-box" style="border-top:4px solid #c62828; padding:18px;">
+        <div style="font-size:11px; color:#888; font-weight:600; text-transform:uppercase; letter-spacing:0.5px;">📉 Egresos del mes</div>
+        <div style="font-size:28px; font-weight:700; color:#c62828; margin:8px 0 4px;">${{ egresos_total|floatformat:2 }}</div>
+        <div style="font-size:11px; color:#666;">
+            {{ egresos_recientes|length }} movimiento{{ egresos_recientes|length|pluralize }} registrado{{ egresos_recientes|length|pluralize }}
+        </div>
+        {% if var_egresos is not None %}
+            <div style="margin-top:8px; font-size:11px; color:{% if var_egresos > 0 %}#c62828{% else %}#2e7d32{% endif %};">
+                {% if var_egresos > 0 %}▲{% else %}▼{% endif %} {{ var_egresos|floatformat:1 }}% vs mes anterior
+            </div>
+        {% endif %}
+    </div>
+
+    {# Balance #}
+    <div class="card-box" style="border-top:4px solid {% if balance >= 0 %}#1a237e{% else %}#c62828{% endif %}; padding:18px;">
+        <div style="font-size:11px; color:#888; font-weight:600; text-transform:uppercase; letter-spacing:0.5px;">⚖️ Balance del mes</div>
+        <div style="font-size:28px; font-weight:700; color:{% if balance >= 0 %}#1a237e{% else %}#c62828{% endif %}; margin:8px 0 4px;">
+            {% if balance >= 0 %}+{% endif %}${{ balance|floatformat:2 }}
+        </div>
+        <div style="font-size:11px; color:#666;">
+            {% if balance > 0 %}
+                Ganancia neta del mes
+            {% elif balance < 0 %}
+                Pérdida del mes
+            {% else %}
+                Sin movimiento neto
+            {% endif %}
+        </div>
+        {% if var_balance is not None %}
+            <div style="margin-top:8px; font-size:11px; color:{% if var_balance >= 0 %}#2e7d32{% else %}#c62828{% endif %};">
+                {% if var_balance >= 0 %}▲{% else %}▼{% endif %} {{ var_balance|floatformat:1 }}% vs mes anterior
+            </div>
+        {% endif %}
+    </div>
+
+    {# Por cobrar #}
+    <div class="card-box" style="border-top:4px solid #f0ad4e; padding:18px;">
+        <div style="font-size:11px; color:#888; font-weight:600; text-transform:uppercase; letter-spacing:0.5px;">⏳ Por cobrar (acumulado)</div>
+        <div style="font-size:28px; font-weight:700; color:#f0ad4e; margin:8px 0 4px;">${{ por_cobrar|floatformat:2 }}</div>
+        <div style="font-size:11px; color:#666;">
+            Saldos pendientes en comprobantes
+        </div>
+    </div>
+</div>
+
+{# ─── Gráfico de barras: últimos 6 meses ──────────────── #}
+<div class="card-box" style="margin-bottom:20px; padding:24px;">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:18px;">
+        <h3 style="color:#1a237e; font-size:16px;">📊 Ingresos vs Egresos — últimos 6 meses</h3>
+        <div style="display:flex; gap:14px; font-size:11px;">
+            <span><span style="display:inline-block; width:12px; height:12px; background:#2e7d32; border-radius:2px; vertical-align:middle;"></span> Ingresos</span>
+            <span><span style="display:inline-block; width:12px; height:12px; background:#c62828; border-radius:2px; vertical-align:middle;"></span> Egresos</span>
+        </div>
+    </div>
+    <div style="overflow-x:auto;">
+        <canvas id="grafico-meses" style="width:100%; height:280px; max-height:280px;"></canvas>
+    </div>
+</div>
+
+{# ─── Top egresos por categoría + Movimientos recientes ─ #}
+<div style="display:grid; grid-template-columns: 1fr 1.4fr; gap:16px; margin-bottom:20px;">
+
+    <div class="card-box" style="padding:20px;">
+        <h3 style="color:#1a237e; font-size:15px; margin-bottom:14px;">🏷️ Egresos por categoría — {{ mes_nombre }}</h3>
+        {% if top_categorias %}
+            {% for cat in top_categorias %}
+            <div style="margin-bottom:10px;">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+                    <span style="font-size:13px;">
+                        {{ cat.icono|default:"•" }} {{ cat.nombre }}
+                    </span>
+                    <strong style="font-size:13px; color:{{ cat.color }};">${{ cat.total|floatformat:2 }}</strong>
+                </div>
+                <div style="background:#f0f0f0; border-radius:6px; height:8px; overflow:hidden;">
+                    {% widthratio cat.total egresos_total 100 as pct %}
+                    <div style="background:{{ cat.color }}; height:100%; width:{{ pct }}%;"></div>
+                </div>
+            </div>
+            {% endfor %}
+        {% else %}
+            <div style="text-align:center; color:#888; padding:30px 10px; font-size:13px;">
+                No hay egresos en este mes.<br>
+                <a href="{% url 'academia:admin_egreso_crear' %}" class="btn btn-success btn-sm" style="margin-top:10px;">+ Registrar primer egreso</a>
+            </div>
+        {% endif %}
+    </div>
+
+    <div class="card-box" style="padding:20px;">
+        <h3 style="color:#1a237e; font-size:15px; margin-bottom:14px;">📋 Egresos recientes — {{ mes_nombre }}</h3>
+        {% if egresos_recientes %}
+            <div style="max-height:340px; overflow-y:auto;">
+                <table style="width:100%; font-size:12px;">
+                    <tbody>
+                        {% for e in egresos_recientes %}
+                        <tr>
+                            <td style="padding:8px 6px; border-bottom:1px solid #f0f0f0; white-space:nowrap; color:#888; font-size:11px;">{{ e.fecha|date:"d/m" }}</td>
+                            <td style="padding:8px 6px; border-bottom:1px solid #f0f0f0;">
+                                <span style="background:{{ e.categoria.color }}; color:white; padding:1px 6px; border-radius:8px; font-size:10px;">
+                                    {{ e.categoria.icono|default:"•" }} {{ e.categoria.nombre }}
+                                </span>
+                            </td>
+                            <td style="padding:8px 6px; border-bottom:1px solid #f0f0f0;">{{ e.concepto|truncatechars:35 }}</td>
+                            <td style="padding:8px 6px; border-bottom:1px solid #f0f0f0; text-align:right; white-space:nowrap;">
+                                <strong style="color:#c62828;">${{ e.monto|floatformat:2 }}</strong>
+                            </td>
+                            <td style="padding:8px 6px; border-bottom:1px solid #f0f0f0; text-align:right;">
+                                <a href="{% url 'academia:admin_egreso_editar' e.pk %}" class="btn btn-warning btn-sm" style="padding:2px 8px; font-size:10px;">✎</a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            <div style="margin-top:12px; text-align:center;">
+                <a href="{% url 'academia:admin_egresos_lista' %}" style="color:#1a237e; font-size:12px;">Ver historial completo →</a>
+            </div>
+        {% else %}
+            <div style="text-align:center; color:#888; padding:40px 10px; font-size:13px;">
+                Sin movimientos en {{ mes_nombre }} {{ anio }}.
+            </div>
+        {% endif %}
+    </div>
+
+</div>
+
+{# ─── Acumulado histórico (todo el sistema) ────────────── #}
+<div class="card-box" style="padding:24px; background:linear-gradient(135deg, #1a237e 0%, #283593 100%); color:white;">
+    <h3 style="font-size:16px; margin-bottom:6px;">🏛️ Acumulado histórico de toda la academia</h3>
+    <p style="font-size:12px; opacity:0.85; margin-bottom:18px;">Suma de todos los registros desde el inicio del sistema</p>
+
+    <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap:18px;">
+        <div>
+            <div style="font-size:11px; opacity:0.8; text-transform:uppercase;">Total ingresos</div>
+            <div style="font-size:24px; font-weight:700;">${{ total_ingresos_hist|floatformat:2 }}</div>
+            <div style="font-size:10px; opacity:0.7; margin-top:2px;">
+                Abonos ${{ total_abonos_hist|floatformat:2 }} +
+                Ventas ${{ total_ventas_hist|floatformat:2 }}
+            </div>
+        </div>
+        <div>
+            <div style="font-size:11px; opacity:0.8; text-transform:uppercase;">Total egresos</div>
+            <div style="font-size:24px; font-weight:700; color:#ffcdd2;">${{ total_egresos_hist|floatformat:2 }}</div>
+        </div>
+        <div>
+            <div style="font-size:11px; opacity:0.8; text-transform:uppercase;">Balance neto</div>
+            <div style="font-size:28px; font-weight:700; color:{% if balance_hist >= 0 %}#a5d6a7{% else %}#ef9a9a{% endif %};">
+                {% if balance_hist >= 0 %}+{% endif %}${{ balance_hist|floatformat:2 }}
+            </div>
+            <div style="font-size:10px; opacity:0.7; margin-top:2px;">
+                {% if balance_hist > 0 %}✓ Operación rentable{% elif balance_hist < 0 %}⚠ Operación en pérdida{% else %}— Sin diferencia neta{% endif %}
+            </div>
+        </div>
+        <div>
+            <div style="font-size:11px; opacity:0.8; text-transform:uppercase;">Por cobrar</div>
+            <div style="font-size:24px; font-weight:700; color:#ffe082;">${{ por_cobrar|floatformat:2 }}</div>
+            <div style="font-size:10px; opacity:0.7; margin-top:2px;">Pendiente en comprobantes</div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+
+{% block extra_js %}
+<script>
+(function() {
+    // ── Datos del gráfico (renderizados desde Django) ──
+    const data = {{ serie_meses_json|safe }};
+
+    const canvas = document.getElementById('grafico-meses');
+    if (!canvas) return;
+
+    // ── Render con Canvas 2D nativo (sin librerías) ──
+    function dibujar() {
+        const dpr = window.devicePixelRatio || 1;
+        const w = canvas.clientWidth;
+        const h = canvas.clientHeight;
+        canvas.width = w * dpr;
+        canvas.height = h * dpr;
+        const ctx = canvas.getContext('2d');
+        ctx.scale(dpr, dpr);
+        ctx.clearRect(0, 0, w, h);
+
+        const padTop = 20, padBottom = 50, padLeft = 60, padRight = 20;
+        const chartW = w - padLeft - padRight;
+        const chartH = h - padTop - padBottom;
+
+        // Máximo
+        let maxVal = 0;
+        data.forEach(d => {
+            maxVal = Math.max(maxVal, d.ingresos, d.egresos);
+        });
+        if (maxVal === 0) maxVal = 100;
+        // Redondear hacia arriba al múltiplo "bonito" más cercano
+        const step = Math.pow(10, Math.floor(Math.log10(maxVal)));
+        maxVal = Math.ceil(maxVal / step) * step;
+
+        // Grid horizontal y labels Y
+        ctx.font = '10px -apple-system, sans-serif';
+        ctx.fillStyle = '#888';
+        ctx.strokeStyle = '#eee';
+        ctx.lineWidth = 1;
+        const ySteps = 4;
+        for (let i = 0; i <= ySteps; i++) {
+            const y = padTop + chartH - (chartH * i / ySteps);
+            ctx.beginPath();
+            ctx.moveTo(padLeft, y);
+            ctx.lineTo(padLeft + chartW, y);
+            ctx.stroke();
+            const val = (maxVal * i / ySteps).toFixed(0);
+            ctx.textAlign = 'right';
+            ctx.fillText('$' + val, padLeft - 6, y + 3);
+        }
+
+        // Barras
+        const groupW = chartW / data.length;
+        const barW = Math.min(28, (groupW - 14) / 2);
+        data.forEach((d, idx) => {
+            const cx = padLeft + groupW * idx + groupW / 2;
+            const x1 = cx - barW - 2;
+            const x2 = cx + 2;
+
+            // Ingresos (verde)
+            const hIng = (d.ingresos / maxVal) * chartH;
+            ctx.fillStyle = '#2e7d32';
+            ctx.fillRect(x1, padTop + chartH - hIng, barW, hIng);
+
+            // Egresos (rojo)
+            const hEgr = (d.egresos / maxVal) * chartH;
+            ctx.fillStyle = '#c62828';
+            ctx.fillRect(x2, padTop + chartH - hEgr, barW, hEgr);
+
+            // Label X (mes)
+            ctx.fillStyle = '#444';
+            ctx.font = '11px -apple-system, sans-serif';
+            ctx.textAlign = 'center';
+            ctx.fillText(d.label, cx, padTop + chartH + 16);
+
+            // Balance debajo
+            ctx.font = '10px -apple-system, sans-serif';
+            ctx.fillStyle = d.balance >= 0 ? '#2e7d32' : '#c62828';
+            const sign = d.balance >= 0 ? '+' : '';
+            ctx.fillText(sign + '$' + Math.round(d.balance), cx, padTop + chartH + 32);
+        });
+    }
+
+    dibujar();
+    window.addEventListener('resize', dibujar);
+})();
+</script>
+{% endblock %}

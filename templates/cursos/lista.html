@@ -1,0 +1,166 @@
+{% extends 'base.html' %}
+
+{% block title %}Cursos {{ modalidad_label }}{% endblock %}
+
+{% block readonly_banner %}
+<div class="readonly-banner">
+    👁 Estás viendo el catálogo en <strong>modo solo lectura</strong>.
+    Los administradores pueden crear, editar y eliminar cursos.
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="crumb">
+    <a href="{% url 'academia:bienvenida' %}">Inicio</a> &nbsp;›&nbsp; Cursos {{ modalidad_label }}
+</div>
+
+<div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:12px;">
+    <div>
+        <h2 class="page-title">Cursos y Categorías</h2>
+        <p class="page-subtitle">
+            Total {{ modalidad_label }}: {{ total_cursos }} curso{{ total_cursos|pluralize }}
+            en {{ categorias|length }} categoría{{ categorias|length|pluralize:"s,s" }}.
+        </p>
+    </div>
+    {% if puede_editar_cursos %}
+    <div style="display:flex; gap:8px;">
+        <a href="{% url 'academia:curso_crear' %}?modalidad={{ modalidad }}" class="btn btn-success">
+            + Nuevo curso {{ modalidad_label|lower }}
+        </a>
+    </div>
+    {% endif %}
+</div>
+
+{# ── Tabs Presencial / Online ──────────────────────── #}
+<div class="modalidad-tabs">
+    <a href="{% url 'academia:cursos_lista' modalidad='presencial' %}"
+       class="{% if modalidad == 'presencial' %}active{% endif %}">
+        🏫 Presencial
+        <span class="tab-count">{{ counts.presencial }}</span>
+    </a>
+    <a href="{% url 'academia:cursos_lista' modalidad='online' %}"
+       class="{% if modalidad == 'online' %}active{% endif %}">
+        🟢 Online
+        <span class="tab-count">{{ counts.online }}</span>
+    </a>
+</div>
+
+{% for cat in categorias %}
+    {% if cat.total > 0 %}
+    <div style="margin-top: 28px;">
+        <div style="display:flex; align-items:center; gap:10px; margin-bottom:12px;">
+            <div style="width:6px; height:28px; background:{{ cat.obj.color }}; border-radius:3px;"></div>
+            <h3 style="font-size:18px; color:{{ cat.obj.color }}; font-weight:700;">
+                {{ cat.obj.nombre }}
+            </h3>
+            <span style="background:#f0f0f0; color:#555; padding:2px 10px; border-radius:12px; font-size:12px; font-weight:600;">
+                {{ cat.total }} curso{{ cat.total|pluralize }}
+            </span>
+            {% if puede_editar_cursos %}
+            <a href="{% url 'academia:curso_crear' %}?categoria={{ cat.obj.id }}&modalidad={{ modalidad }}"
+               class="btn btn-secondary btn-sm" style="margin-left:auto;">
+                + Agregar a {{ cat.obj.nombre }}
+            </a>
+            {% endif %}
+        </div>
+
+        <div style="display:grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 14px;">
+            {% for curso in cat.cursos %}
+                <div class="card-box" style="padding: 18px; border-left: 4px solid {{ cat.obj.color }}; {% if not curso.activo %}opacity:0.5;{% endif %}">
+                    <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:8px;">
+                        <h4 style="font-size:15px; color:#1a237e; margin-bottom:6px; flex:1;">
+                            {{ curso.nombre }}
+                            {% if not curso.activo %}<span style="color:#888; font-size:11px; font-weight:400;">(inactivo)</span>{% endif %}
+                        </h4>
+                        <span style="font-size:14px; font-weight:700; color:#2e7d32; white-space:nowrap;">
+                            {% if modalidad == 'online' %}
+                                ${{ curso.valor_online }}
+                            {% else %}
+                                ${{ curso.valor_presencial }}
+                            {% endif %}
+                        </span>
+                    </div>
+
+                    {# Etiquetas de modalidad #}
+                    <div style="display:flex; gap:4px; flex-wrap:wrap; margin-bottom:8px;">
+                        {% if curso.ofrece_presencial %}
+                            <span class="badge badge-presencial" style="font-size:10px;">
+                                Presencial ${{ curso.valor_presencial }}
+                            </span>
+                        {% endif %}
+                        {% if curso.ofrece_online %}
+                            <span class="badge badge-online" style="font-size:10px;">
+                                Online ${{ curso.valor_online }}
+                            </span>
+                        {% endif %}
+                    </div>
+
+                    {% if curso.duracion %}
+                        <p style="font-size:12px; color:#888; margin-bottom:8px;">⏱ {{ curso.duracion }}</p>
+                    {% endif %}
+                    {% if curso.descripcion %}
+                        <p style="font-size:12px; color:#666; line-height:1.4; margin-bottom:10px;">{{ curso.descripcion|truncatewords:18 }}</p>
+                    {% endif %}
+
+                    <div style="display:flex; gap:6px; flex-wrap:wrap; margin-top:10px;">
+                        {% if puede_editar_cursos %}
+                            <a href="{% url 'academia:curso_jornadas' curso.pk %}"
+                               class="btn btn-secondary btn-sm">
+                                Jornadas ({{ curso.jornadas.count }})
+                            </a>
+                            <a href="{% url 'academia:curso_editar' curso.pk %}"
+                               class="btn btn-warning btn-sm">Editar</a>
+                            <form method="post" action="{% url 'academia:curso_eliminar' curso.pk %}"
+                                  style="display:inline;"
+                                  onsubmit="return confirm('¿Eliminar este curso?');">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-danger btn-sm">Eliminar</button>
+                            </form>
+                        {% else %}
+                            {# Asesores: solo ven cuántas jornadas hay, sin enlace #}
+                            <span class="btn btn-secondary btn-sm" style="cursor:default; opacity:0.7;">
+                                {{ curso.jornadas.count }} jornada{{ curso.jornadas.count|pluralize }}
+                            </span>
+                        {% endif %}
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+{% empty %}
+    <div class="empty-state">
+        <p>No hay categorías. La migración inicial debería haber creado tres por defecto.</p>
+    </div>
+{% endfor %}
+
+{% if total_cursos == 0 %}
+<div class="empty-state" style="margin-top: 28px; padding: 40px; background:white; border-radius:10px; box-shadow:0 1px 4px rgba(0,0,0,0.04);">
+    <p style="font-size:15px; margin-bottom:8px;">No hay cursos {{ modalidad_label|lower }} todavía.</p>
+    {% if puede_editar_cursos %}
+        <p style="font-size:13px; color:#aaa; margin-bottom:16px;">
+            Crea uno nuevo, o edita un curso existente y marca la modalidad <strong>{{ modalidad_label|lower }}</strong>.
+        </p>
+        <a href="{% url 'academia:curso_crear' %}?modalidad={{ modalidad }}" class="btn btn-primary">
+            + Crear primer curso {{ modalidad_label|lower }}
+        </a>
+    {% endif %}
+</div>
+{% endif %}
+
+{% if sin_categoria %}
+<div style="margin-top: 28px;">
+    <h3 style="font-size:16px; color:#888; margin-bottom:12px;">⚠️ Cursos sin categoría</h3>
+    <div style="display:grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 14px;">
+        {% for curso in sin_categoria %}
+            <div class="card-box" style="padding: 18px; border-left: 4px solid #888;">
+                <h4 style="font-size:15px; color:#1a237e;">{{ curso.nombre }}</h4>
+                {% if puede_editar_cursos %}
+                <a href="{% url 'academia:curso_editar' curso.pk %}" class="btn btn-warning btn-sm" style="margin-top:8px;">Asignar categoría</a>
+                {% endif %}
+            </div>
+        {% endfor %}
+    </div>
+</div>
+{% endif %}
+{% endblock %}

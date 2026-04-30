@@ -1,0 +1,186 @@
+{% extends 'base.html' %}
+
+{% block title %}Pagos — Estado financiero{% endblock %}
+
+{% block content %}
+<div class="crumb">
+    <a href="{% url 'academia:bienvenida' %}">Inicio</a> &nbsp;›&nbsp; Pagos
+</div>
+
+<div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:12px; margin-bottom:8px;">
+    <div>
+        <h2 class="page-title">💳 Estado de Pagos</h2>
+        <p class="page-subtitle">
+            Centro financiero de matrículas. Filtra por estado, curso, modalidad o año.
+        </p>
+    </div>
+    <a href="{% url 'academia:pagos_export' %}?estado={{ filtros.estado }}&curso={{ filtros.curso }}&modalidad={{ filtros.modalidad }}&anio={{ filtros.anio }}&q={{ filtros.q }}"
+       class="btn btn-success">
+        📥 Descargar Excel
+    </a>
+</div>
+
+{# ─── Tarjetas de resumen ──────────────────────────────── #}
+<div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap:14px; margin-bottom:24px;">
+
+    <a href="?estado=Pagado" style="text-decoration:none;">
+        <div class="card-box" style="border-top:4px solid #2e7d32; padding:16px; cursor:pointer; {% if filtros.estado == 'Pagado' %}box-shadow:0 0 0 2px #2e7d32;{% endif %}">
+            <div style="font-size:11px; color:#888; font-weight:600; letter-spacing:0.5px;">PAGADO</div>
+            <div style="font-size:26px; font-weight:700; color:#2e7d32; margin-top:4px;">{{ conteo_estado.Pagado }}</div>
+            <div style="font-size:12px; color:#666; margin-top:4px;">Sin saldo pendiente</div>
+        </div>
+    </a>
+
+    <a href="?estado=Parcial" style="text-decoration:none;">
+        <div class="card-box" style="border-top:4px solid #f0ad4e; padding:16px; cursor:pointer; {% if filtros.estado == 'Parcial' %}box-shadow:0 0 0 2px #f0ad4e;{% endif %}">
+            <div style="font-size:11px; color:#888; font-weight:600; letter-spacing:0.5px;">PARCIAL</div>
+            <div style="font-size:26px; font-weight:700; color:#f0ad4e; margin-top:4px;">{{ conteo_estado.Parcial }}</div>
+            <div style="font-size:12px; color:#666; margin-top:4px;">Pago incompleto</div>
+        </div>
+    </a>
+
+    <a href="?estado=Pendiente" style="text-decoration:none;">
+        <div class="card-box" style="border-top:4px solid #c62828; padding:16px; cursor:pointer; {% if filtros.estado == 'Pendiente' %}box-shadow:0 0 0 2px #c62828;{% endif %}">
+            <div style="font-size:11px; color:#888; font-weight:600; letter-spacing:0.5px;">PENDIENTE</div>
+            <div style="font-size:26px; font-weight:700; color:#c62828; margin-top:4px;">{{ conteo_estado.Pendiente }}</div>
+            <div style="font-size:12px; color:#666; margin-top:4px;">Sin abonos</div>
+        </div>
+    </a>
+
+    <div class="card-box" style="border-top:4px solid #1a237e; padding:16px;">
+        <div style="font-size:11px; color:#888; font-weight:600; letter-spacing:0.5px;">FACTURADO</div>
+        <div style="font-size:22px; font-weight:700; color:#1a237e; margin-top:4px;">${{ totales.total_facturado|floatformat:2 }}</div>
+        <div style="font-size:12px; color:#666; margin-top:4px;">{{ totales.total_matriculas }} matrícula{{ totales.total_matriculas|pluralize }}</div>
+    </div>
+
+    <div class="card-box" style="border-top:4px solid #2e7d32; padding:16px;">
+        <div style="font-size:11px; color:#888; font-weight:600; letter-spacing:0.5px;">COBRADO</div>
+        <div style="font-size:22px; font-weight:700; color:#2e7d32; margin-top:4px;">${{ totales.total_cobrado|floatformat:2 }}</div>
+        <div style="font-size:12px; color:#666; margin-top:4px;">Ingresos efectivos</div>
+    </div>
+
+    <div class="card-box" style="border-top:4px solid #c62828; padding:16px;">
+        <div style="font-size:11px; color:#888; font-weight:600; letter-spacing:0.5px;">POR COBRAR</div>
+        <div style="font-size:22px; font-weight:700; color:#c62828; margin-top:4px;">${{ totales.total_pendiente|floatformat:2 }}</div>
+        <div style="font-size:12px; color:#666; margin-top:4px;">Saldo total</div>
+    </div>
+
+</div>
+
+{# ─── Filtros ──────────────────────────────────────────── #}
+<div class="card-box" style="margin-bottom:18px; padding:16px;">
+    <form method="get" style="display:grid; grid-template-columns: 2fr 1fr 1fr 1fr 1fr auto; gap:10px; align-items:end;">
+
+        <div>
+            <label class="form-label" style="font-size:11px;">Buscar por curso, cédula o nombre</label>
+            <input type="text" name="q" value="{{ filtros.q }}"
+                   placeholder="Ej.: Excel, 0102030405…" class="form-input">
+        </div>
+
+        <div>
+            <label class="form-label" style="font-size:11px;">Estado</label>
+            <select name="estado" class="form-input">
+                <option value="">— Todos —</option>
+                <option value="Pagado" {% if filtros.estado == 'Pagado' %}selected{% endif %}>Pagado</option>
+                <option value="Parcial" {% if filtros.estado == 'Parcial' %}selected{% endif %}>Parcial</option>
+                <option value="Pendiente" {% if filtros.estado == 'Pendiente' %}selected{% endif %}>Pendiente</option>
+            </select>
+        </div>
+
+        <div>
+            <label class="form-label" style="font-size:11px;">Curso</label>
+            <select name="curso" class="form-input">
+                <option value="">— Todos —</option>
+                {% for c in cursos %}
+                    <option value="{{ c.id }}" {% if filtros.curso == c.id|stringformat:"s" %}selected{% endif %}>
+                        {{ c.nombre }}
+                    </option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div>
+            <label class="form-label" style="font-size:11px;">Modalidad</label>
+            <select name="modalidad" class="form-input">
+                <option value="">— Todas —</option>
+                <option value="presencial" {% if filtros.modalidad == 'presencial' %}selected{% endif %}>Presencial</option>
+                <option value="online" {% if filtros.modalidad == 'online' %}selected{% endif %}>Online</option>
+            </select>
+        </div>
+
+        <div>
+            <label class="form-label" style="font-size:11px;">Año</label>
+            <select name="anio" class="form-input">
+                <option value="">— Todos —</option>
+                {% for a in anios %}
+                    <option value="{{ a }}" {% if filtros.anio == a|stringformat:"s" %}selected{% endif %}>{{ a }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div style="display:flex; gap:6px;">
+            <button type="submit" class="btn btn-primary">Filtrar</button>
+            <a href="{% url 'academia:pagos_lista' %}" class="btn btn-secondary">Limpiar</a>
+        </div>
+    </form>
+</div>
+
+{# ─── Tabla ────────────────────────────────────────────── #}
+<div class="table-wrap">
+    {% if matriculas %}
+    <table>
+        <thead>
+            <tr>
+                <th>Fecha</th>
+                <th>Cédula</th>
+                <th>Estudiante</th>
+                <th>Curso</th>
+                <th>Modalidad</th>
+                <th>Valor curso</th>
+                <th>Pagado</th>
+                <th>Saldo</th>
+                <th>Estado</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for m in matriculas %}
+            <tr>
+                <td>{{ m.fecha_matricula|date:"d/m/Y" }}</td>
+                <td><strong>{{ m.estudiante.cedula }}</strong></td>
+                <td>{{ m.estudiante.apellidos }} {{ m.estudiante.nombres }}</td>
+                <td>{{ m.curso.nombre }}</td>
+                <td>
+                    <span class="badge badge-{{ m.modalidad }}">
+                        {% if m.modalidad == 'online' %}🟢{% else %}🏫{% endif %}
+                        {{ m.get_modalidad_display }}
+                    </span>
+                </td>
+                <td>${{ m.valor_curso|floatformat:2 }}</td>
+                <td><strong style="color:#2e7d32;">${{ m.valor_pagado|floatformat:2 }}</strong></td>
+                <td><strong style="color:{% if m.saldo > 0 %}#c62828{% else %}#2e7d32{% endif %};">${{ m.saldo|floatformat:2 }}</strong></td>
+                <td>
+                    {% if m.estado_pago == 'Pagado' %}
+                        <span class="badge badge-pagado">✓ Pagado</span>
+                    {% elif m.estado_pago == 'Parcial' %}
+                        <span class="badge badge-parcial">◐ Parcial</span>
+                    {% else %}
+                        <span class="badge badge-pendiente">○ Pendiente</span>
+                    {% endif %}
+                </td>
+                <td>
+                    <a href="{% url 'academia:matricula_abonos' m.pk %}"
+                       class="btn btn-success btn-sm">💵 Gestionar pagos</a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+        <div class="empty-state">
+            <p style="font-size:15px;">No hay matrículas con los filtros aplicados.</p>
+            <a href="{% url 'academia:pagos_lista' %}" class="btn btn-secondary" style="margin-top:12px;">Limpiar filtros</a>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

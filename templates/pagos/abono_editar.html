@@ -1,0 +1,95 @@
+{% extends 'base.html' %}
+
+{% block title %}Editar abono {{ abono.numero_recibo }}{% endblock %}
+
+{% block content %}
+<div class="crumb">
+    <a href="{% url 'academia:bienvenida' %}">Inicio</a> &nbsp;›&nbsp;
+    <a href="{% url 'academia:pagos_lista' %}">Pagos</a> &nbsp;›&nbsp;
+    <a href="{% url 'academia:matricula_abonos' matricula.pk %}">{{ matricula.estudiante.nombre_completo }}</a> &nbsp;›&nbsp;
+    Editar {{ abono.numero_recibo }}
+</div>
+
+<h2 class="page-title">Editar abono {{ abono.numero_recibo }}</h2>
+<p class="page-subtitle">
+    Matrícula: <strong>{{ matricula.estudiante.nombre_completo }}</strong> — {{ matricula.curso.nombre }}<br>
+    Valor del curso: <strong>${{ matricula.valor_curso|floatformat:2 }}</strong> ·
+    Pagado actualmente: <strong>${{ matricula.valor_pagado|floatformat:2 }}</strong>
+</p>
+
+<form method="post" class="card-box" novalidate style="max-width: 560px;">
+    {% csrf_token %}
+
+    {% if form.non_field_errors %}
+        <div class="flash flash-error" style="margin-bottom:16px;">
+            {{ form.non_field_errors }}
+        </div>
+    {% endif %}
+
+    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:14px; margin-bottom:14px;">
+        <div>
+            <label class="form-label">Fecha *</label>
+            {{ form.fecha }}
+            {{ form.fecha.errors }}
+        </div>
+        <div>
+            <label class="form-label">Monto (USD) *</label>
+            {{ form.monto }}
+            {{ form.monto.errors }}
+        </div>
+    </div>
+
+    <div style="margin-bottom:14px;">
+        <label class="form-label">Método de pago *</label>
+        {{ form.metodo }}
+        {{ form.metodo.errors }}
+    </div>
+
+    {# Banco — solo si método es Transferencia bancaria #}
+    <div id="bloque-banco" style="margin-bottom:14px; display:none; background:#f5f7ff; border:1px solid #c5cae9; border-radius:8px; padding:12px;">
+        <label class="form-label" style="color:#1a237e;">🏦 Banco *</label>
+        {{ form.banco }}
+        {{ form.banco.errors }}
+    </div>
+
+    <div style="margin-bottom:14px;">
+        <label class="form-label">Nº de recibo</label>
+        {{ form.numero_recibo }}
+        {{ form.numero_recibo.errors }}
+        <small style="color:#888; font-size:11px;">Si lo dejas vacío, se conserva el actual.</small>
+    </div>
+
+    <div style="margin-bottom:14px;">
+        <label class="form-label">Observaciones</label>
+        {{ form.observaciones }}
+    </div>
+
+    <div style="background:#fafafa; padding:10px; border-radius:6px; font-size:12px; color:#666; margin-bottom:16px;">
+        Registrado el {{ abono.creado|date:"d/m/Y H:i" }}
+        {% if abono.registrado_por %}
+            por <strong>{{ abono.registrado_por.get_full_name|default:abono.registrado_por.username }}</strong>
+        {% endif %}.
+    </div>
+
+    <div style="display:flex; gap:8px; justify-content:flex-end;">
+        <a href="{% url 'academia:matricula_abonos' matricula.pk %}" class="btn btn-secondary">Cancelar</a>
+        <button type="submit" class="btn btn-primary">Guardar cambios</button>
+    </div>
+</form>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+(function() {
+    const metodoSel = document.getElementById('id_metodo');
+    const bloqueBanco = document.getElementById('bloque-banco');
+    if (!metodoSel || !bloqueBanco) return;
+
+    function actualizar() {
+        bloqueBanco.style.display = (metodoSel.value === 'transferencia') ? 'block' : 'none';
+    }
+    metodoSel.addEventListener('change', actualizar);
+    actualizar();
+})();
+</script>
+{% endblock %}

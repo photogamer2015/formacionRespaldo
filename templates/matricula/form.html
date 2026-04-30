@@ -1,0 +1,239 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ titulo }}{% endblock %}
+
+{% block content %}
+<div class="crumb">
+    <a href="{% url 'academia:bienvenida' %}">Inicio</a> &nbsp;›&nbsp;
+    <a href="{% url 'academia:matricula_menu' modalidad=modalidad %}">Matrícula {{ modalidad_label }}</a> &nbsp;›&nbsp;
+    {% if modo == 'editar' %}Editar{% else %}Registrar{% endif %}
+</div>
+
+<h2 class="page-title">{{ titulo }}</h2>
+<p class="page-subtitle">
+    {% if modo == 'editar' %}
+        Modifica los datos del estudiante o de la matrícula y guarda los cambios.
+    {% else %}
+        Si la cédula ya existe, se reutilizan los datos del estudiante. Si no, se crea uno nuevo.
+    {% endif %}
+    <span class="badge badge-{{ modalidad }}" style="margin-left:8px;">
+        {% if modalidad == 'online' %}🟢 Online{% else %}🏫 Presencial{% endif %}
+    </span>
+</p>
+
+<form method="post" class="card-box" novalidate>
+    {% csrf_token %}
+
+    <h3 class="form-section-title">Datos del estudiante</h3>
+    <div class="form-grid">
+        <div>
+            <label class="form-label" for="{{ est_form.cedula.id_for_label }}">Cédula *</label>
+            {{ est_form.cedula }}{{ est_form.cedula.errors }}
+        </div>
+        <div>
+            <label class="form-label" for="{{ est_form.apellidos.id_for_label }}">Apellidos *</label>
+            {{ est_form.apellidos }}{{ est_form.apellidos.errors }}
+        </div>
+        <div>
+            <label class="form-label" for="{{ est_form.nombres.id_for_label }}">Nombres *</label>
+            {{ est_form.nombres }}{{ est_form.nombres.errors }}
+        </div>
+        <div>
+            <label class="form-label" for="{{ est_form.edad.id_for_label }}">Edad</label>
+            {{ est_form.edad }}{{ est_form.edad.errors }}
+        </div>
+        <div>
+            <label class="form-label" for="{{ est_form.correo.id_for_label }}">Correo</label>
+            {{ est_form.correo }}{{ est_form.correo.errors }}
+        </div>
+        <div>
+            <label class="form-label" for="{{ est_form.celular.id_for_label }}">Celular</label>
+            {{ est_form.celular }}{{ est_form.celular.errors }}
+        </div>
+        <div>
+            <label class="form-label" for="{{ est_form.nivel_formacion.id_for_label }}">Nivel de formación</label>
+            {{ est_form.nivel_formacion }}{{ est_form.nivel_formacion.errors }}
+        </div>
+        <div>
+            <label class="form-label" for="{{ est_form.titulo_profesional.id_for_label }}">Título profesional</label>
+            {{ est_form.titulo_profesional }}{{ est_form.titulo_profesional.errors }}
+        </div>
+        <div>
+            <label class="form-label" for="{{ est_form.ciudad.id_for_label }}">Ciudad</label>
+            {{ est_form.ciudad }}{{ est_form.ciudad.errors }}
+        </div>
+    </div>
+
+    <h3 class="form-section-title">Datos de la matrícula</h3>
+    <div class="form-grid">
+        <div>
+            <label class="form-label" for="id_curso">
+                Curso *
+                <span style="color:#888; font-weight:400; font-size:11px;">
+                    (solo cursos {{ modalidad_label|lower }})
+                </span>
+            </label>
+            {{ mat_form.curso }}{{ mat_form.curso.errors }}
+            <small id="curso-categoria-hint" style="color:#888; font-size:11px;">El valor del curso y las jornadas se cargan automáticamente.</small>
+        </div>
+        <div>
+            <label class="form-label" for="{{ mat_form.fecha_matricula.id_for_label }}">Fecha de matrícula *</label>
+            {{ mat_form.fecha_matricula }}{{ mat_form.fecha_matricula.errors }}
+        </div>
+        <div>
+            <label class="form-label" for="id_valor_curso">Valor del curso (USD) *</label>
+            {{ mat_form.valor_curso }}{{ mat_form.valor_curso.errors }}
+        </div>
+        <div>
+            <label class="form-label" for="{{ mat_form.valor_pagado.id_for_label }}">Valor pagado (USD)</label>
+            {{ mat_form.valor_pagado }}{{ mat_form.valor_pagado.errors }}
+            {% if mat_form.valor_pagado.help_text %}
+            <small style="color: #666; display: block; margin-top: 5px;">
+                {{ mat_form.valor_pagado.help_text }}
+            </small>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Jornada -->
+    <div style="margin-top: 16px;">
+        <label class="form-label">
+            Seleccione la jornada {{ modalidad_label|lower }} y ciudad correctamente
+            <span style="color:#888; font-weight:400; font-size:12px;">(no se permiten cambios de fecha una vez seleccionada)</span> *
+        </label>
+        <div class="radio-group" id="jornada-group">
+            <span class="radio-empty" id="jornada-vacio">Selecciona primero un curso para ver las jornadas {{ modalidad_label|lower }} disponibles.</span>
+            {{ mat_form.jornada }}
+        </div>
+        {{ mat_form.jornada.errors }}
+    </div>
+
+    <!-- Talla de camiseta — SOLO para cursos de categoría Técnico -->
+    <div id="talla-wrapper" style="margin-top: 16px; display: none;">
+        <label class="form-label">
+            👕 Talla de camiseta
+            <span style="color:#888; font-weight:400; font-size:12px;">(solo cursos técnicos — verifica bien tu talla antes de seleccionar)</span>
+        </label>
+        <div class="radio-group">
+            {{ mat_form.talla_camiseta }}
+        </div>
+        {{ mat_form.talla_camiseta.errors }}
+    </div>
+
+    <div style="margin-top: 16px;">
+        <label class="form-label" for="{{ mat_form.observaciones.id_for_label }}">Observaciones</label>
+        {{ mat_form.observaciones }}
+    </div>
+
+    <div style="display:flex; gap:10px; margin-top:24px; justify-content:flex-end;">
+        <a href="{% url 'academia:matricula_lista' modalidad=modalidad %}" class="btn btn-secondary">Cancelar</a>
+        <button type="submit" class="btn btn-primary">
+            {% if modo == 'editar' %}Guardar cambios{% else %}Registrar matrícula{% endif %}
+        </button>
+    </div>
+</form>
+{% endblock %}
+
+
+{% block extra_js %}
+<script>
+(function() {
+    const cursoSelect = document.getElementById('id_curso');
+    const valorCursoInput = document.getElementById('id_valor_curso');
+    const jornadaGroup = document.getElementById('jornada-group');
+    const jornadaVacio = document.getElementById('jornada-vacio');
+    const tallaWrapper = document.getElementById('talla-wrapper');
+    const categoriaHint = document.getElementById('curso-categoria-hint');
+
+    const MODALIDAD = "{{ modalidad }}";
+    const jornadaPreseleccionada = "{{ mat_form.jornada.value|default_if_none:'' }}";
+
+    function mostrarTalla(visible) {
+        if (visible) {
+            tallaWrapper.style.display = 'block';
+        } else {
+            tallaWrapper.style.display = 'none';
+            const radios = tallaWrapper.querySelectorAll('input[type="radio"]');
+            radios.forEach(r => r.checked = false);
+        }
+    }
+
+    async function cargarDatosCurso(cursoId, preseleccionarJornada) {
+        if (!cursoId) {
+            jornadaGroup.querySelectorAll('label').forEach(l => l.remove());
+            if (jornadaVacio) jornadaVacio.style.display = 'block';
+            mostrarTalla(false);
+            categoriaHint.textContent = 'El valor del curso y las jornadas se cargan automáticamente.';
+            categoriaHint.style.color = '#888';
+            return;
+        }
+
+        // Datos del curso (con la modalidad para obtener el valor correcto)
+        try {
+            const respCurso = await fetch(`/api/curso/${cursoId}/?modalidad=${MODALIDAD}`);
+            const dataCurso = await respCurso.json();
+            if (dataCurso.ok) {
+                if (!valorCursoInput.value || valorCursoInput.dataset.fromCurso === '1') {
+                    valorCursoInput.value = dataCurso.curso.valor;
+                    valorCursoInput.dataset.fromCurso = '1';
+                }
+                if (dataCurso.curso.categoria_nombre) {
+                    categoriaHint.innerHTML =
+                        `Categoría: <strong>${dataCurso.curso.categoria_nombre}</strong> · ` +
+                        `Valor ${MODALIDAD}: <strong>$${dataCurso.curso.valor}</strong>`;
+                    categoriaHint.style.color = '#1a237e';
+                } else {
+                    categoriaHint.textContent = 'Este curso no tiene categoría asignada.';
+                    categoriaHint.style.color = '#c62828';
+                }
+                mostrarTalla(!!dataCurso.curso.requiere_talla);
+            }
+        } catch (err) {
+            console.error('Error al obtener curso:', err);
+        }
+
+        // Jornadas (filtradas por modalidad)
+        try {
+            const respJor = await fetch(`/api/curso/${cursoId}/jornadas/?modalidad=${MODALIDAD}`);
+            const dataJor = await respJor.json();
+            jornadaGroup.querySelectorAll('label').forEach(l => l.remove());
+            if (jornadaVacio) {
+                jornadaVacio.style.display = dataJor.jornadas.length === 0 ? 'block' : 'none';
+                if (dataJor.jornadas.length === 0) {
+                    jornadaVacio.textContent =
+                        `Este curso no tiene jornadas ${MODALIDAD} configuradas. ` +
+                        'Pide a un administrador que las agregue desde "Cursos > Jornadas".';
+                }
+            }
+            dataJor.jornadas.forEach(j => {
+                const lbl = document.createElement('label');
+                const radio = document.createElement('input');
+                radio.type = 'radio';
+                radio.name = 'mat-jornada';
+                radio.value = j.id;
+                if (preseleccionarJornada && String(j.id) === String(preseleccionarJornada)) {
+                    radio.checked = true;
+                }
+                lbl.appendChild(radio);
+                const span = document.createElement('span');
+                span.textContent = j.etiqueta;
+                lbl.appendChild(span);
+                jornadaGroup.appendChild(lbl);
+            });
+        } catch (err) {
+            console.error('Error al obtener jornadas:', err);
+        }
+    }
+
+    cursoSelect.addEventListener('change', function() {
+        cargarDatosCurso(this.value, null);
+    });
+
+    valorCursoInput.addEventListener('input', () => valorCursoInput.dataset.fromCurso = '0');
+
+    if (cursoSelect.value) {
+        cargarDatosCurso(cursoSelect.value, jornadaPreseleccionada);
+    }
+})();
+</script>
+{% endblock %}

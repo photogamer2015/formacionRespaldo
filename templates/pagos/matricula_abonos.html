@@ -1,0 +1,287 @@
+{% extends 'base.html' %}
+
+{% block title %}Pagos — {{ matricula.estudiante.nombre_completo }}{% endblock %}
+
+{% block content %}
+<div class="crumb">
+    <a href="{% url 'academia:bienvenida' %}">Inicio</a> &nbsp;›&nbsp;
+    <a href="{% url 'academia:pagos_lista' %}">Pagos</a> &nbsp;›&nbsp;
+    {{ matricula.estudiante.nombre_completo }}
+</div>
+
+{# ─── Cabecera de la matrícula ───────────────────────── #}
+<div class="card-box" style="margin-bottom:20px; padding:20px;">
+    <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:14px;">
+        <div style="flex:1; min-width:280px;">
+            <h2 class="page-title" style="font-size:22px;">{{ matricula.estudiante.nombre_completo }}</h2>
+            <div style="color:#666; font-size:13px; margin-bottom:8px;">
+                Cédula: <strong>{{ matricula.estudiante.cedula }}</strong> ·
+                Matrícula #{{ matricula.pk }} ·
+                {{ matricula.fecha_matricula|date:"d/m/Y" }}
+            </div>
+            <div style="font-size:14px;">
+                <strong>{{ matricula.curso.nombre }}</strong>
+                {% if matricula.curso.categoria %}
+                    <span style="background:{{ matricula.curso.categoria.color }}; color:white; padding:1px 8px; border-radius:10px; font-size:10px; font-weight:600; margin-left:6px;">{{ matricula.curso.categoria.nombre }}</span>
+                {% endif %}
+                <span class="badge badge-{{ matricula.modalidad }}" style="margin-left:6px;">
+                    {% if matricula.modalidad == 'online' %}🟢{% else %}🏫{% endif %}
+                    {{ matricula.get_modalidad_display }}
+                </span>
+            </div>
+            {% if matricula.jornada %}
+                <div style="color:#888; font-size:12px; margin-top:4px;">{{ matricula.jornada.etiqueta }}</div>
+            {% endif %}
+        </div>
+
+        {# Estado financiero compacto #}
+        <div style="display:grid; grid-template-columns: repeat(3, auto); gap:14px; align-items:start;">
+            <div style="text-align:right;">
+                <div style="font-size:11px; color:#888; font-weight:600; text-transform:uppercase;">Valor curso</div>
+                <div style="font-size:22px; font-weight:700; color:#1a237e;">${{ matricula.valor_curso|floatformat:2 }}</div>
+            </div>
+            <div style="text-align:right;">
+                <div style="font-size:11px; color:#888; font-weight:600; text-transform:uppercase;">Pagado</div>
+                <div style="font-size:22px; font-weight:700; color:#2e7d32;">${{ matricula.valor_pagado|floatformat:2 }}</div>
+            </div>
+            <div style="text-align:right;">
+                <div style="font-size:11px; color:#888; font-weight:600; text-transform:uppercase;">Saldo</div>
+                <div style="font-size:22px; font-weight:700; color:{% if matricula.saldo > 0 %}#c62828{% else %}#2e7d32{% endif %};">${{ matricula.saldo|floatformat:2 }}</div>
+            </div>
+        </div>
+    </div>
+
+    {# Barra de progreso #}
+    {% if matricula.valor_curso > 0 %}
+    <div style="margin-top:16px;">
+        {% widthratio matricula.valor_pagado matricula.valor_curso 100 as pct %}
+        <div style="background:#f0f0f0; border-radius:10px; height:14px; overflow:hidden; position:relative;">
+            <div style="background:linear-gradient(90deg, #2e7d32 0%, #4caf50 100%); height:100%; width:{{ pct }}%; transition: width 0.3s;"></div>
+        </div>
+        <div style="display:flex; justify-content:space-between; font-size:11px; color:#666; margin-top:4px;">
+            <span>Progreso de pago</span>
+            <strong>{{ pct }}% completado</strong>
+        </div>
+    </div>
+    {% endif %}
+
+    {# Estado #}
+    <div style="margin-top:14px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
+        <div>
+            {% if matricula.estado_pago == 'Pagado' %}
+                <span class="badge badge-pagado" style="font-size:13px; padding:6px 14px;">✓ PAGADO COMPLETO</span>
+            {% elif matricula.estado_pago == 'Parcial' %}
+                <span class="badge badge-parcial" style="font-size:13px; padding:6px 14px;">◐ PAGO PARCIAL</span>
+            {% else %}
+                <span class="badge badge-pendiente" style="font-size:13px; padding:6px 14px;">○ SIN ABONOS</span>
+            {% endif %}
+        </div>
+
+        {% if saldo_pendiente > 0 %}
+        <button type="button" class="btn btn-success" onclick="abrirModalAbono()">
+            + Registrar abono
+        </button>
+        {% endif %}
+    </div>
+</div>
+
+{# ─── Distribución por método (si hay abonos) ───────── #}
+{% if abonos %}
+<div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap:12px; margin-bottom:20px;">
+    {% for metodo, info in dist_metodo.items %}
+    <div class="card-box" style="padding:14px; border-left:4px solid #2e7d32;">
+        <div style="font-size:11px; color:#888; font-weight:600; text-transform:uppercase;">
+            {{ metodo }}
+        </div>
+        <div style="font-size:18px; font-weight:700; color:#1a237e; margin-top:2px;">
+            ${{ info.total|floatformat:2 }}
+        </div>
+        <div style="font-size:11px; color:#666;">
+            {{ info.count }} abono{{ info.count|pluralize }}
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+
+{# ─── Historial de abonos ───────────────────────────── #}
+<h3 style="font-size:18px; color:#1a237e; margin-bottom:14px;">📋 Historial de Abonos</h3>
+
+<div class="table-wrap">
+    {% if abonos %}
+    <table>
+        <thead>
+            <tr>
+                <th>Recibo</th>
+                <th>Fecha</th>
+                <th>Monto</th>
+                <th>Método</th>
+                <th>Observaciones</th>
+                <th>Registrado por</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for a in abonos %}
+            <tr>
+                <td>
+                    <strong style="color:#1a237e; font-family:monospace;">{{ a.numero_recibo }}</strong>
+                </td>
+                <td>{{ a.fecha|date:"d/m/Y" }}</td>
+                <td>
+                    <strong style="color:#2e7d32; font-size:14px;">${{ a.monto|floatformat:2 }}</strong>
+                </td>
+                <td>
+                    {% if a.metodo == 'efectivo' %}
+                        <span style="background:#e8f5e9; color:#2e7d32; padding:2px 8px; border-radius:10px; font-size:11px; font-weight:600;">💵 Efectivo</span>
+                    {% elif a.metodo == 'transferencia' %}
+                        <span style="background:#e3f2fd; color:#0d47a1; padding:2px 8px; border-radius:10px; font-size:11px; font-weight:600;">🏦 Transferencia</span>
+                        {% if a.banco %}
+                            <div style="font-size:10px; color:#666; margin-top:2px;">{{ a.get_banco_display }}</div>
+                        {% endif %}
+                    {% elif a.metodo == 'tarjeta' %}
+                        <span style="background:#fff3e0; color:#e65100; padding:2px 8px; border-radius:10px; font-size:11px; font-weight:600;">💳 Tarjeta</span>
+                    {% endif %}
+                </td>
+                <td style="max-width:240px; font-size:12px; color:#666; white-space:normal;">
+                    {{ a.observaciones|default:'—'|truncatechars:60 }}
+                </td>
+                <td style="font-size:11px; color:#888;">
+                    {% if a.registrado_por %}{{ a.registrado_por.get_full_name|default:a.registrado_por.username }}{% else %}—{% endif %}
+                    <div style="font-size:10px; color:#aaa;">{{ a.creado|date:"d/m H:i" }}</div>
+                </td>
+                <td>
+                    <div class="row-actions">
+                        <a href="{% url 'academia:abono_recibo' a.pk %}" target="_blank" class="btn btn-secondary btn-sm" title="Ver recibo">📄</a>
+                        <a href="{% url 'academia:abono_editar' matricula.pk a.pk %}" class="btn btn-warning btn-sm">Editar</a>
+                        <form method="post" action="{% url 'academia:abono_eliminar' matricula.pk a.pk %}"
+                              style="display:inline;"
+                              onsubmit="return confirm('¿Eliminar este abono? El saldo se recalculará automáticamente.');">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-danger btn-sm">×</button>
+                        </form>
+                    </div>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+        <div class="empty-state">
+            <p style="font-size:15px;">Esta matrícula aún no tiene abonos registrados.</p>
+            {% if saldo_pendiente > 0 %}
+                <button type="button" class="btn btn-primary" onclick="abrirModalAbono()" style="margin-top:12px;">
+                    + Registrar primer abono
+                </button>
+            {% endif %}
+        </div>
+    {% endif %}
+</div>
+
+{# Botón volver #}
+<div style="margin-top:20px; display:flex; gap:8px;">
+    <a href="{% url 'academia:pagos_lista' %}" class="btn btn-secondary">‹ Volver a Pagos</a>
+    <a href="{% url 'academia:matricula_editar' modalidad=matricula.modalidad pk=matricula.pk %}" class="btn btn-secondary">Editar matrícula</a>
+</div>
+
+
+{# ─── MODAL: Registrar abono ─────────────────────────────────── #}
+<div id="modal-abono" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:1000; align-items:center; justify-content:center; padding:20px;">
+    <div style="background:white; border-radius:12px; width:100%; max-width:560px; max-height:92vh; overflow-y:auto; padding:28px; box-shadow:0 10px 40px rgba(0,0,0,0.3);">
+        <h3 style="color:#1a237e; margin-bottom:6px; font-size:20px;">💵 Registrar Abono</h3>
+        <p style="font-size:13px; color:#666; margin-bottom:16px;">
+            Saldo pendiente: <strong style="color:#c62828;">${{ saldo_pendiente|floatformat:2 }}</strong>
+        </p>
+
+        <form method="post" action="{% url 'academia:abono_crear' matricula.pk %}">
+            {% csrf_token %}
+
+            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px; margin-bottom:12px;">
+                <div>
+                    <label class="form-label">Fecha *</label>
+                    {{ form.fecha }}
+                    {{ form.fecha.errors }}
+                </div>
+                <div>
+                    <label class="form-label">Monto (USD) *</label>
+                    {{ form.monto }}
+                    {{ form.monto.errors }}
+                </div>
+            </div>
+
+            <div style="margin-bottom:12px;">
+                <label class="form-label">Método de pago *</label>
+                {{ form.metodo }}
+                {{ form.metodo.errors }}
+            </div>
+
+            {# Banco — solo se muestra si el método es Transferencia bancaria #}
+            <div id="bloque-banco" style="margin-bottom:12px; display:none; background:#f5f7ff; border:1px solid #c5cae9; border-radius:8px; padding:12px;">
+                <label class="form-label" style="color:#1a237e;">🏦 Banco *</label>
+                {{ form.banco }}
+                {{ form.banco.errors }}
+                <small style="color:#666; font-size:11px;">Selecciona el banco usado para la transferencia.</small>
+            </div>
+
+            <div style="margin-bottom:12px;">
+                <label class="form-label">
+                    Nº de recibo
+                    <span style="color:#888; font-weight:400; font-size:11px;">(auto: <strong>{{ siguiente_recibo }}</strong>)</span>
+                </label>
+                {{ form.numero_recibo }}
+                {{ form.numero_recibo.errors }}
+            </div>
+
+            <div style="margin-bottom:16px;">
+                <label class="form-label">Observaciones</label>
+                {{ form.observaciones }}
+            </div>
+
+            <div style="display:flex; gap:8px; justify-content:flex-end;">
+                <button type="button" class="btn btn-secondary" onclick="cerrarModalAbono()">Cancelar</button>
+                <button type="submit" class="btn btn-success">Guardar abono</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+
+{% block extra_js %}
+<script>
+function abrirModalAbono() {
+    document.getElementById('modal-abono').style.display = 'flex';
+    setTimeout(() => {
+        const monto = document.getElementById('id_monto');
+        if (monto) { monto.focus(); monto.select(); }
+    }, 100);
+}
+function cerrarModalAbono() {
+    document.getElementById('modal-abono').style.display = 'none';
+}
+document.getElementById('modal-abono').addEventListener('click', (e) => {
+    if (e.target.id === 'modal-abono') cerrarModalAbono();
+});
+document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') cerrarModalAbono();
+});
+
+// ── Mostrar/ocultar bloque de banco según el método de pago ──
+(function() {
+    const metodoSel = document.getElementById('id_metodo');
+    const bloqueBanco = document.getElementById('bloque-banco');
+    if (!metodoSel || !bloqueBanco) return;
+
+    function actualizar() {
+        if (metodoSel.value === 'transferencia') {
+            bloqueBanco.style.display = 'block';
+        } else {
+            bloqueBanco.style.display = 'none';
+        }
+    }
+    metodoSel.addEventListener('change', actualizar);
+    // Estado inicial (por si viene preseleccionado)
+    actualizar();
+})();
+</script>
+{% endblock %}

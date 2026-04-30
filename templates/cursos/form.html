@@ -1,0 +1,265 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ titulo }}{% endblock %}
+
+{% block content %}
+<div class="crumb">
+    <a href="{% url 'academia:bienvenida' %}">Inicio</a> &nbsp;›&nbsp;
+    <a href="{% url 'academia:cursos_lista' modalidad=modalidad_pref %}">Cursos {{ modalidad_pref|capfirst }}</a> &nbsp;›&nbsp;
+    {% if modo == 'editar' %}Editar{% else %}Nuevo{% endif %}
+</div>
+
+<h2 class="page-title">{{ titulo }}</h2>
+<p class="page-subtitle">
+    {% if modo == 'editar' %}
+        Modifica los datos del curso. Puedes activar ambas modalidades con valores distintos.
+    {% else %}
+        Crea un nuevo curso. Marca las modalidades en las que se ofrece y define el valor para cada una.
+    {% endif %}
+</p>
+
+<form method="post" class="card-box" novalidate style="max-width: 720px;">
+    {% csrf_token %}
+
+    {% if form.non_field_errors %}
+        <div class="flash flash-error" style="margin-bottom:16px;">
+            {{ form.non_field_errors }}
+        </div>
+    {% endif %}
+
+    <div style="margin-bottom: 16px;">
+        <label class="form-label" for="id_categoria">
+            Categoría *
+            <button type="button" id="btn-add-categoria"
+                    style="float:right; background:#FFD700; color:#1a237e; border:none;
+                           padding:2px 10px; border-radius:6px; font-size:11px;
+                           font-weight:700; cursor:pointer;">
+                + Nueva categoría
+            </button>
+        </label>
+        {{ form.categoria }}
+        {{ form.categoria.errors }}
+    </div>
+
+    <div style="margin-bottom: 16px;">
+        <label class="form-label">Nombre del curso *</label>
+        {{ form.nombre }}
+        {{ form.nombre.errors }}
+    </div>
+
+    {# ── Modalidades disponibles ───────────────────────────── #}
+    <h3 class="form-section-title">Modalidades y valores</h3>
+    <p style="font-size:12px; color:#666; margin-bottom:14px;">
+        Marca las modalidades en las que se ofrece este curso. Cada una tiene su propio valor.
+    </p>
+
+    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:16px;">
+
+        {# Card Presencial #}
+        <div style="border:2px solid #e0e0e0; border-radius:10px; padding:16px; transition: all 0.2s;"
+             id="card-presencial">
+            <label style="display:flex; align-items:center; gap:8px; font-size:14px; font-weight:600; color:#1a237e; cursor:pointer; margin-bottom:10px;">
+                {{ form.ofrece_presencial }}
+                <span class="badge badge-presencial">🏫 Presencial</span>
+            </label>
+            <label class="form-label" style="font-size:12px;">Valor presencial (USD)</label>
+            {{ form.valor_presencial }}
+            {{ form.valor_presencial.errors }}
+        </div>
+
+        {# Card Online #}
+        <div style="border:2px solid #e0e0e0; border-radius:10px; padding:16px; transition: all 0.2s;"
+             id="card-online">
+            <label style="display:flex; align-items:center; gap:8px; font-size:14px; font-weight:600; color:#2e7d32; cursor:pointer; margin-bottom:10px;">
+                {{ form.ofrece_online }}
+                <span class="badge badge-online">🟢 Online</span>
+            </label>
+            <label class="form-label" style="font-size:12px;">Valor online (USD)</label>
+            {{ form.valor_online }}
+            {{ form.valor_online.errors }}
+        </div>
+
+    </div>
+
+    <h3 class="form-section-title">Otros datos</h3>
+    <div class="form-grid">
+        <div>
+            <label class="form-label">Duración</label>
+            {{ form.duracion }}
+            {{ form.duracion.errors }}
+        </div>
+    </div>
+
+    <div style="margin-top: 16px;">
+        <label class="form-label">Descripción</label>
+        {{ form.descripcion }}
+    </div>
+
+    <div style="margin-top: 16px;">
+        <label style="display:flex; align-items:center; gap:8px; font-size:13px;">
+            {{ form.activo }} Activo
+        </label>
+    </div>
+
+    <div style="display:flex; gap:10px; margin-top:24px; justify-content:flex-end;">
+        <a href="{% url 'academia:cursos_lista' modalidad=modalidad_pref %}" class="btn btn-secondary">Cancelar</a>
+        <button type="submit" class="btn btn-primary">
+            {% if modo == 'editar' %}Guardar cambios{% else %}Crear curso{% endif %}
+        </button>
+    </div>
+</form>
+
+
+<!-- Modal: agregar nueva categoría -->
+<div class="modal-backdrop" id="modal-categoria" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:1000; align-items:center; justify-content:center; padding:20px;">
+    <div style="background:white; border-radius:12px; width:100%; max-width:480px; padding:28px; box-shadow:0 10px 40px rgba(0,0,0,0.3);">
+        <h3 style="color:#1a237e; margin-bottom:16px; font-size:18px;">Nueva categoría</h3>
+        <div id="modal-error" style="display:none;" class="flash flash-error"></div>
+
+        <div style="display:flex; flex-direction:column; gap:12px;">
+            <div>
+                <label class="form-label">Nombre *</label>
+                <input type="text" id="cat-nombre" class="form-input"
+                       placeholder="Ej.: Vacacionales" autofocus>
+            </div>
+            <div>
+                <label class="form-label">Descripción</label>
+                <textarea id="cat-descripcion" class="form-input" rows="2"></textarea>
+            </div>
+            <div>
+                <label class="form-label">Color</label>
+                <select id="cat-color" class="form-input">
+                    <option value="#1a237e">Azul</option>
+                    <option value="#2e7d32">Verde</option>
+                    <option value="#c62828">Rojo</option>
+                    <option value="#f0ad4e">Naranja</option>
+                    <option value="#6a1b9a">Morado</option>
+                    <option value="#00838f">Cian</option>
+                    <option value="#5d4037">Marrón</option>
+                    <option value="#455a64">Gris</option>
+                </select>
+            </div>
+        </div>
+
+        <div style="display:flex; gap:8px; justify-content:flex-end; margin-top:20px;">
+            <button type="button" class="btn btn-secondary" id="btn-cancel-cat">Cancelar</button>
+            <button type="button" class="btn btn-primary" id="btn-save-cat">Guardar</button>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+
+{% block extra_js %}
+<script>
+(function() {
+    const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+    const categoriaSelect = document.getElementById('id_categoria');
+    const modal = document.getElementById('modal-categoria');
+    const errorBox = document.getElementById('modal-error');
+    const inputNombre = document.getElementById('cat-nombre');
+    const inputDescripcion = document.getElementById('cat-descripcion');
+    const inputColor = document.getElementById('cat-color');
+
+    /* ── Cards presencial / online: resaltar cuando están activas ── */
+    const chkPres = document.getElementById('id_ofrece_presencial');
+    const chkOnl = document.getElementById('id_ofrece_online');
+    const cardPres = document.getElementById('card-presencial');
+    const cardOnl = document.getElementById('card-online');
+
+    function actualizarCards() {
+        if (chkPres.checked) {
+            cardPres.style.borderColor = '#1a237e';
+            cardPres.style.background = '#f5f7ff';
+        } else {
+            cardPres.style.borderColor = '#e0e0e0';
+            cardPres.style.background = 'white';
+        }
+        if (chkOnl.checked) {
+            cardOnl.style.borderColor = '#2e7d32';
+            cardOnl.style.background = '#f1f8e9';
+        } else {
+            cardOnl.style.borderColor = '#e0e0e0';
+            cardOnl.style.background = 'white';
+        }
+    }
+    if (chkPres && chkOnl) {
+        chkPres.addEventListener('change', actualizarCards);
+        chkOnl.addEventListener('change', actualizarCards);
+        actualizarCards();
+    }
+
+    /* ── Modal nueva categoría ───────────────────────────── */
+    function openModal() {
+        errorBox.style.display = 'none';
+        inputNombre.value = '';
+        inputDescripcion.value = '';
+        inputColor.value = '#1a237e';
+        modal.style.display = 'flex';
+        setTimeout(() => inputNombre.focus(), 100);
+    }
+    function closeModal() {
+        modal.style.display = 'none';
+    }
+
+    document.getElementById('btn-add-categoria').addEventListener('click', openModal);
+    document.getElementById('btn-cancel-cat').addEventListener('click', closeModal);
+    modal.addEventListener('click', (e) => { if (e.target === modal) closeModal(); });
+
+    document.getElementById('btn-save-cat').addEventListener('click', async function() {
+        errorBox.style.display = 'none';
+        const nombre = inputNombre.value.trim();
+        if (!nombre) {
+            errorBox.textContent = 'El nombre es obligatorio.';
+            errorBox.style.display = 'block';
+            return;
+        }
+        this.disabled = true;
+        this.textContent = 'Guardando…';
+
+        try {
+            const resp = await fetch('{% url "academia:api_categoria_crear" %}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': csrfToken,
+                },
+                body: JSON.stringify({
+                    nombre: nombre,
+                    descripcion: inputDescripcion.value.trim(),
+                    color: inputColor.value,
+                }),
+            });
+            const data = await resp.json();
+            if (!resp.ok || !data.ok) {
+                errorBox.textContent = data.error || 'No se pudo crear la categoría.';
+                errorBox.style.display = 'block';
+            } else {
+                const opt = document.createElement('option');
+                opt.value = data.categoria.id;
+                opt.textContent = data.categoria.nombre;
+                opt.selected = true;
+                categoriaSelect.appendChild(opt);
+                categoriaSelect.value = data.categoria.id;
+                closeModal();
+            }
+        } catch (err) {
+            errorBox.textContent = 'Error de conexión: ' + err.message;
+            errorBox.style.display = 'block';
+        } finally {
+            this.disabled = false;
+            this.textContent = 'Guardar';
+        }
+    });
+
+    modal.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            document.getElementById('btn-save-cat').click();
+        } else if (e.key === 'Escape') {
+            closeModal();
+        }
+    });
+})();
+</script>
+{% endblock %}
