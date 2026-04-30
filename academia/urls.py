@@ -12,6 +12,9 @@ app_name = 'academia'
 urlpatterns = [
     path('bienvenida/', views.bienvenida, name='bienvenida'),
 
+    # ── Ayuda ──────────────────────────────────────────────────
+    path('ayuda/', views.ayuda, name='ayuda'),
+
     # ── Matrícula (presencial u online) ────────────────────────
     path('matricula/<str:modalidad>/',
          views.matricula_menu, name='matricula_menu'),

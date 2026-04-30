@@ -79,6 +79,12 @@ def bienvenida(request):
     })
 
 
+@login_required
+def ayuda(request):
+    """Vista para la sección de ayuda y soporte del sistema."""
+    return render(request, 'ayuda.html')
+
+
 # ─────────────────────────────────────────────────────────
 # Matrícula (presencial u online — parametrizado por URL)
 # ─────────────────────────────────────────────────────────

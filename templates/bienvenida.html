@@ -24,8 +24,8 @@
              onmouseover="this.style.transform='translateY(-3px)'"
              onmouseout="this.style.transform='translateY(0)'">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
-                <h3 style="font-size:16px; color:#1a237e;">Matrícula Presencial</h3>
-                <span class="badge badge-presencial">🏫 Presencial</span>
+                <h3 style="font-size:16px; color:#1a237e;">Matrícula Estudiantil</h3>
+                <span class="badge badge-presencial">El registro de matrículas</span>
             </div>
             <p style="font-size:13px; color:#777; line-height:1.5;">
                 Registrar matrículas, editar y consultar la lista completa de estudiantes presenciales.
@@ -38,25 +38,25 @@
     </a>
     {% endif %}
 
-    {# ── Registro Administrativo (solo admin) ───────────────── #}
-    {% if es_admin %}
-        <a href="{% url 'academia:admin_dashboard' %}" style="text-decoration:none; color:inherit;">
-            <div class="card-box" style="border-top: 4px solid #c62828; cursor:pointer; transition: transform 0.15s;"
-                 onmouseover="this.style.transform='translateY(-3px)'"
-                 onmouseout="this.style.transform='translateY(0)'">
-                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
-                    <h3 style="font-size:16px; color:#1a237e;">📊 Registro Administrativo</h3>
-                    <span class="badge" style="background:#ffebee; color:#c62828;">🔒 Admin</span>
-                </div>
-                <p style="font-size:13px; color:#777; line-height:1.5;">
-                    Balance financiero mensual: ingresos, egresos, ganancia/pérdida y gráficos.
-                </p>
-                <div style="display:flex; justify-content:space-between; align-items:center; margin-top:12px;">
-                    <span style="background:#e8f5e9; color:#2e7d32; font-size:11px; padding:3px 8px; border-radius:4px; font-weight:600;">Disponible</span>
-                    <span style="font-size:11px; color:#888;">Solo administradores</span>
-                </div>
+    {# ── Estudiantes ────────────────────────────────────────── #}
+    {% if puede_gestionar_matriculas %}
+    <a href="{% url 'academia:estudiantes_lista' %}" style="text-decoration:none; color:inherit;">
+        <div class="card-box" style="border-top: 4px solid #00838f; cursor:pointer; transition: transform 0.15s;"
+             onmouseover="this.style.transform='translateY(-3px)'"
+             onmouseout="this.style.transform='translateY(0)'">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+                <h3 style="font-size:16px; color:#1a237e;">👥 Estudiantes</h3>
+                <span class="badge" style="background:#e0f7fa; color:#00838f;">Directorio</span>
             </div>
-        </a>
+            <p style="font-size:13px; color:#777; line-height:1.5;">
+                Directorio completo, agrupados por curso, ficha individual con historial. Descarga Excel.
+            </p>
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-top:12px;">
+                <span style="background:#e8f5e9; color:#2e7d32; font-size:11px; padding:3px 8px; border-radius:4px; font-weight:600;">Disponible</span>
+                <span style="font-size:14px; font-weight:600; color:#1a237e;">Ver →</span>
+            </div>
+        </div>
+    </a>
     {% endif %}
 
     {# ── Cursos Presenciales ────────────────────────────────── #}
@@ -126,48 +126,6 @@
     </a>
     {% endif %}
 
-    {# ── Comprobantes ──────────────────────────────────────── #}
-    {% if puede_gestionar_matriculas %}
-    <a href="{% url 'academia:comprobante_menu' %}" style="text-decoration:none; color:inherit;">
-        <div class="card-box" style="border-top: 4px solid #FFD700; cursor:pointer; transition: transform 0.15s;"
-             onmouseover="this.style.transform='translateY(-3px)'"
-             onmouseout="this.style.transform='translateY(0)'">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
-                <h3 style="font-size:16px; color:#1a237e;">🧾 Comprobantes</h3>
-                <span class="badge" style="background:#fff8e1; color:#856404;">Ventas</span>
-            </div>
-            <p style="font-size:13px; color:#777; line-height:1.5;">
-                Registrar ventas, ranking de asesoras y datos para facturación.
-            </p>
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-top:12px;">
-                <span style="background:#e8f5e9; color:#2e7d32; font-size:11px; padding:3px 8px; border-radius:4px; font-weight:600;">Disponible</span>
-                <span style="font-size:14px; font-weight:600; color:#1a237e;">Ver →</span>
-            </div>
-        </div>
-    </a>
-    {% endif %}
-
-    {# ── Historial de matriculados ─────────────────────────── #}
-    {% if puede_gestionar_matriculas %}
-    <a href="{% url 'academia:historial_lista' %}" style="text-decoration:none; color:inherit;">
-        <div class="card-box" style="border-top: 4px solid #6a1b9a; cursor:pointer; transition: transform 0.15s;"
-             onmouseover="this.style.transform='translateY(-3px)'"
-             onmouseout="this.style.transform='translateY(0)'">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
-                <h3 style="font-size:16px; color:#1a237e;">📚 Historial</h3>
-                <span class="badge" style="background:#f3e5f5; color:#6a1b9a;">Año / Mes</span>
-            </div>
-            <p style="font-size:13px; color:#777; line-height:1.5;">
-                Matrículas organizadas por año y mes. Descarga reportes anuales en Excel.
-            </p>
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-top:12px;">
-                <span style="background:#e8f5e9; color:#2e7d32; font-size:11px; padding:3px 8px; border-radius:4px; font-weight:600;">Disponible</span>
-                <span style="font-size:14px; font-weight:600; color:#1a237e;">Ver →</span>
-            </div>
-        </div>
-    </a>
-    {% endif %}
-
     {# ── Comprobantes de Venta ─────────────────────────── #}
     {% if puede_gestionar_matriculas %}
     <a href="{% url 'academia:comprobante_menu' %}" style="text-decoration:none; color:inherit;">
@@ -190,18 +148,59 @@
     </a>
     {% endif %}
 
-    {# ── Estudiantes ────────────────────────────────────────── #}
+     {# ── Historial de matriculados ─────────────────────────── #}
     {% if puede_gestionar_matriculas %}
-    <a href="{% url 'academia:estudiantes_lista' %}" style="text-decoration:none; color:inherit;">
-        <div class="card-box" style="border-top: 4px solid #00838f; cursor:pointer; transition: transform 0.15s;"
+    <a href="{% url 'academia:historial_lista' %}" style="text-decoration:none; color:inherit;">
+        <div class="card-box" style="border-top: 4px solid #6a1b9a; cursor:pointer; transition: transform 0.15s;"
              onmouseover="this.style.transform='translateY(-3px)'"
              onmouseout="this.style.transform='translateY(0)'">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
-                <h3 style="font-size:16px; color:#1a237e;">👥 Estudiantes</h3>
-                <span class="badge" style="background:#e0f7fa; color:#00838f;">Directorio</span>
+                <h3 style="font-size:16px; color:#1a237e;">📚 Historial</h3>
+                <span class="badge" style="background:#f3e5f5; color:#6a1b9a;">Año / Mes</span>
             </div>
             <p style="font-size:13px; color:#777; line-height:1.5;">
-                Directorio completo, agrupados por curso, ficha individual con historial. Descarga Excel.
+                Matrículas organizadas por año y mes. Descarga reportes anuales en Excel.
+            </p>
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-top:12px;">
+                <span style="background:#e8f5e9; color:#2e7d32; font-size:11px; padding:3px 8px; border-radius:4px; font-weight:600;">Disponible</span>
+                <span style="font-size:14px; font-weight:600; color:#1a237e;">Ver →</span>
+            </div>
+        </div>
+    </a>
+    {% endif %}
+
+     {# ── Registro Administrativo (solo admin) ───────────────── #}
+    {% if es_admin %}
+        <a href="{% url 'academia:admin_dashboard' %}" style="text-decoration:none; color:inherit;">
+            <div class="card-box" style="border-top: 4px solid #c62828; cursor:pointer; transition: transform 0.15s;"
+                 onmouseover="this.style.transform='translateY(-3px)'"
+                 onmouseout="this.style.transform='translateY(0)'">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+                    <h3 style="font-size:16px; color:#1a237e;">📊 Registro Administrativo</h3>
+                    <span class="badge" style="background:#ffebee; color:#c62828;">🔒 Admin</span>
+                </div>
+                <p style="font-size:13px; color:#777; line-height:1.5;">
+                    Balance financiero mensual: ingresos, egresos, ganancia/pérdida y gráficos.
+                </p>
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-top:12px;">
+                    <span style="background:#e8f5e9; color:#2e7d32; font-size:11px; padding:3px 8px; border-radius:4px; font-weight:600;">Disponible</span>
+                    <span style="font-size:11px; color:#888;">Solo administradores</span>
+                </div>
+            </div>
+        </a>
+    {% endif %}
+    {# ── Ayuda ──────────────────────────────────────── #}
+    {% if puede_gestionar_matriculas %}
+    <a href="{% url 'academia:ayuda' %}" style="text-decoration:none; color:inherit;">
+        <div class="card-box" style="border-top: 4px solid #FFD700; cursor:pointer; transition: transform 0.15s;"
+             onmouseover="this.style.transform='translateY(-3px)'"
+             onmouseout="this.style.transform='translateY(0)'">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+                <h3 style="font-size:16px; color:#1a237e;"> Ayuda </h3>
+                <span class="badge" style="background:#fff8e1; color:#856404;">Ventas</span>
+            </div>
+            <p style="font-size:13px; color:#777; line-height:1.5;">
+                Manuales y soporte del sistema.
             </p>
             <div style="display:flex; justify-content:space-between; align-items:center; margin-top:12px;">
                 <span style="background:#e8f5e9; color:#2e7d32; font-size:11px; padding:3px 8px; border-radius:4px; font-weight:600;">Disponible</span>

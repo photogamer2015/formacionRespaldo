@@ -1,0 +1,88 @@
+{% extends 'base.html' %}
+
+{% block title %}Ayuda y Soporte{% endblock %}
+
+{% block content %}
+<div class="crumb">
+    <a href="{% url 'academia:bienvenida' %}">Inicio</a> &nbsp;›&nbsp; Ayuda
+</div>
+
+<div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:12px; margin-bottom: 24px;">
+    <div>
+        <h2 class="page-title">🛟 Centro de Ayuda</h2>
+        <p class="page-subtitle">Manuales, tutoriales y soporte técnico para el uso del sistema.</p>
+    </div>
+</div>
+
+{# ── Índice de Soporte ──────────────────────── #}
+<div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; margin-bottom: 28px;">
+    
+    <div class="card-box" style="padding: 18px; border-top: 4px solid #1a237e;">
+        <h3 style="font-size:16px; color:#1a237e; margin-bottom: 8px;">🎓 Matrículas</h3>
+        <p style="font-size:13px; color:#666; margin-bottom:12px; line-height:1.4;">
+            Aprende a registrar nuevos estudiantes y asignarles cursos y jornadas (Presencial/Online).
+        </p>
+        <a href="#ayuda-matriculas" class="btn btn-secondary btn-sm">Ver manual ↓</a>
+    </div>
+
+    <div class="card-box" style="padding: 18px; border-top: 4px solid #2e7d32;">
+        <h3 style="font-size:16px; color:#1a237e; margin-bottom: 8px;">💵 Pagos y Abonos</h3>
+        <p style="font-size:13px; color:#666; margin-bottom:12px; line-height:1.4;">
+            Cómo registrar cobros parciales o totales de estudiantes ya matriculados.
+        </p>
+        <a href="#ayuda-pagos" class="btn btn-secondary btn-sm">Ver manual ↓</a>
+    </div>
+
+    <div class="card-box" style="padding: 18px; border-top: 4px solid #FFD700;">
+        <h3 style="font-size:16px; color:#1a237e; margin-bottom: 8px;">🧾 Comprobantes de Venta</h3>
+        <p style="font-size:13px; color:#666; margin-bottom:12px; line-height:1.4;">
+            Instrucciones para generar comprobantes rápidos y llevar el ranking de asesoras.
+        </p>
+        <a href="#ayuda-comprobantes" class="btn btn-secondary btn-sm">Ver manual ↓</a>
+    </div>
+
+</div>
+
+{# ── Contenido Detallado ────────────────────── #}
+
+<div id="ayuda-matriculas" class="card-box" style="padding: 24px; margin-bottom: 24px;">
+    <h3 style="font-size:18px; color:#1a237e; margin-bottom: 12px; border-bottom: 1px solid #eee; padding-bottom: 8px;">
+        🎓 Gestión de Matrículas
+    </h3>
+    <ul style="font-size:14px; color:#555; line-height:1.6; padding-left: 20px;">
+        <li><strong>Nuevo estudiante:</strong> Ve a Inicio > Selecciona Presencial/Online > Clic en "Nueva matrícula". Ingresa la cédula; si el sistema lo reconoce, autocompletará sus datos.</li>
+        <li><strong>Modalidad Online:</strong> Actualmente, la matrícula online por sistema está pausada. Los estudiantes online se registran usando los formularios de Google asignados.</li>
+        <li><strong>Jornadas:</strong> Para que un curso aparezca en el registro, debe tener jornadas activas creadas por el Administrador.</li>
+    </ul>
+</div>
+
+<div id="ayuda-pagos" class="card-box" style="padding: 24px; margin-bottom: 24px;">
+    <h3 style="font-size:18px; color:#2e7d32; margin-bottom: 12px; border-bottom: 1px solid #eee; padding-bottom: 8px;">
+        💵 Registro de Pagos y Abonos
+    </h3>
+    <ul style="font-size:14px; color:#555; line-height:1.6; padding-left: 20px;">
+        <li><strong>Dónde registrar:</strong> Ve al menú de "Pagos", busca al estudiante matriculado y haz clic en "Ver Abonos".</li>
+        <li><strong>Tipos de Pago:</strong> Puedes cobrar en efectivo, tarjeta o transferencia. Si eliges transferencia, el sistema te exigirá registrar el banco usado.</li>
+        <li><strong>Recibos:</strong> Si dejas el campo "Nº de recibo" en blanco, el sistema generará uno automáticamente (Ej: REC-0025).</li>
+    </ul>
+</div>
+
+<div id="ayuda-comprobantes" class="card-box" style="padding: 24px; margin-bottom: 24px;">
+    <h3 style="font-size:18px; color:#856404; margin-bottom: 12px; border-bottom: 1px solid #eee; padding-bottom: 8px;">
+        🧾 Comprobantes de Venta (Asesoras)
+    </h3>
+    <ul style="font-size:14px; color:#555; line-height:1.6; padding-left: 20px;">
+        <li><strong>¿Para qué sirve?</strong> Es un registro rápido de una venta efectuada, no inscribe al alumno formalmente, pero permite llevar el control del dinero y la facturación.</li>
+        <li><strong>Registro de Vendedora:</strong> Al registrar un comprobante, el sistema asignará tu usuario automáticamente como la persona que hizo la venta.</li>
+        <li><strong>Tipo de registro:</strong> Ahora debes indicar en el formulario si la venta proviene de Central 1, Central 2, Central IA o Seguimiento.</li>
+        <li><strong>Subir foto:</strong> Si tienes la foto del recibo físico o de la transferencia, pega el enlace (de Drive, Imgur, etc.) en el campo "Link del comprobante".</li>
+    </ul>
+</div>
+
+<div style="background:#f5f7ff; padding: 20px; border-radius: 8px; text-align: center; margin-top: 30px; border: 1px dashed #1a237e;">
+    <h4 style="font-size:15px; color:#1a237e; margin-bottom: 6px;">¿Necesitas soporte técnico adicional?</h4>
+    <p style="font-size:13px; color:#666;">
+        Si encuentras un error en el sistema o necesitas restablecer una contraseña, contacta al <strong>Administrador (Yandri)</strong> a través de los canales internos.
+    </p>
+</div>
+{% endblock %}
