@@ -3,209 +3,318 @@
 {% block title %}Bienvenido — Formación Profesional EC{% endblock %}
 
 {% block content %}
-<div style="text-align:center; margin-bottom: 40px;">
-    <h2 class="page-title" style="font-size: 30px;">Hola, {{ usuario.first_name|default:usuario.username }}</h2>
+
+<style>
+:root {
+    --primary: #1a237e;
+    --secondary: #2e7d32;
+    --accent: #FFD700;
+    --danger: #c62828;
+    --bg: #f5f7fb;
+    --card-bg: #ffffff;
+    --text-main: #1f2937;
+    --text-muted: #6b7280;
+}
+
+body {
+    background-color: var(--bg);
+    font-family: 'Inter', 'Segoe UI', sans-serif;
+}
+
+.page-title {
+    font-weight: 700;
+    color: var(--primary);
+}
+
+.page-subtitle {
+    color: var(--text-muted);
+    font-size: 14px;
+}
+
+/* HEADER */
+.dashboard-header {
+    text-align: center;
+    margin-bottom: 50px;
+}
+
+/* LOGO */
+.logo-box {
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:12px;
+    margin-bottom:15px;
+}
+
+.logo-icon {
+    width:42px;
+    height:42px;
+    background: linear-gradient(135deg, #1a237e, #3949ab);
+    border-radius:12px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    color:white;
+    font-weight:700;
+    font-size:18px;
+}
+
+.logo-text {
+    text-align:left;
+}
+
+.logo-title {
+    font-weight:700;
+    color:#1a237e;
+    font-size:16px;
+}
+
+.logo-sub {
+    font-size:11px;
+    color:#777;
+}
+
+/* GRID */
+.dashboard-grid {
+    display:grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 24px;
+}
+
+/* TARJETAS */
+.card-box {
+    background: var(--card-bg);
+    border-radius: 14px;
+    padding: 18px;
+    box-shadow: 0 6px 18px rgba(0,0,0,0.05);
+    transition: all 0.2s ease;
+    border: 1px solid #eee;
+    text-decoration:none;
+    color:inherit;
+}
+
+.card-box:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 12px 28px rgba(0,0,0,0.08);
+}
+
+.card-header {
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+}
+
+.card-title {
+    font-size:16px;
+    font-weight:600;
+    color:var(--primary);
+}
+
+.card-icon {
+    font-size:22px;
+    opacity:0.85;
+}
+
+.card-desc {
+    margin-top:8px;
+    font-size:13px;
+    color:var(--text-muted);
+    line-height:1.5;
+}
+
+.card-footer {
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-top:14px;
+}
+
+.status-ok {
+    background:#e8f5e9;
+    color:var(--secondary);
+    font-size:11px;
+    padding:4px 8px;
+    border-radius:6px;
+    font-weight:600;
+}
+
+.card-number {
+    font-size:20px;
+    font-weight:700;
+    color:var(--primary);
+}
+
+/* ALERTA */
+.alert-box {
+    margin-top:32px;
+    text-align:center;
+    padding:24px;
+    background:#fff8e1;
+    border-radius:10px;
+    color:#856404;
+}
+</style>
+
+<!-- HEADER -->
+<div class="dashboard-header">
+    <h2 class="page-title" style="font-size: 30px;">
+        Hola, {{ usuario.first_name|default:usuario.username }}
+    </h2>
+
     <p class="page-subtitle">
-        Bienvenido al sistema de gestión académica
+        Sistema de Gestión Académica
         {% if es_admin %}
-            — <strong style="color:#1a237e;">Modo Administrador</strong>
+            — <strong style="color:var(--primary);">Administrador</strong>
         {% elif es_asesor %}
-            — <strong style="color:#2e7d32;">Modo Asesor</strong> (puedes registrar matrículas y consultar cursos)
+            — <strong style="color:var(--secondary);">Asesor</strong>
         {% endif %}
     </p>
 </div>
 
-<div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 20px;">
+<div class="dashboard-grid">
 
-    {# ── Matrícula Presencial ────────────────────────────────── #}
     {% if puede_gestionar_matriculas %}
-    <a href="{% url 'academia:matricula_menu' modalidad='presencial' %}" style="text-decoration:none; color:inherit;">
-        <div class="card-box" style="border-top: 4px solid #FFD700; cursor:pointer; transition: transform 0.15s;"
-             onmouseover="this.style.transform='translateY(-3px)'"
-             onmouseout="this.style.transform='translateY(0)'">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
-                <h3 style="font-size:16px; color:#1a237e;">Matrícula Estudiantil</h3>
-                <span class="badge badge-presencial">El registro de matrículas</span>
-            </div>
-            <p style="font-size:13px; color:#777; line-height:1.5;">
-                Registrar matrículas, editar y consultar la lista completa de estudiantes presenciales.
-            </p>
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-top:12px;">
-                <span style="background:#e8f5e9; color:#2e7d32; font-size:11px; padding:3px 8px; border-radius:4px; font-weight:600;">Disponible</span>
-                <span style="font-size:18px; font-weight:700; color:#1a237e;">{{ stats.total_presencial }}</span>
-            </div>
+    <a href="{% url 'academia:matricula_menu' modalidad='presencial' %}" class="card-box">
+        <div class="card-header">
+            <div class="card-title">Registro de Matrícula </div>
+            <div class="card-icon">🎓</div>
+        </div>
+        <div class="card-desc">
+            Registro, edición y consulta de matrículas presenciales.
+        </div>
+        <div class="card-footer">
+            <span class="status-ok">Disponible</span>
+            <span class="card-number">Total: {{ stats.total_presencial }}</span>
+            <span> →</span>
         </div>
     </a>
     {% endif %}
 
-    {# ── Estudiantes ────────────────────────────────────────── #}
     {% if puede_gestionar_matriculas %}
-    <a href="{% url 'academia:estudiantes_lista' %}" style="text-decoration:none; color:inherit;">
-        <div class="card-box" style="border-top: 4px solid #00838f; cursor:pointer; transition: transform 0.15s;"
-             onmouseover="this.style.transform='translateY(-3px)'"
-             onmouseout="this.style.transform='translateY(0)'">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
-                <h3 style="font-size:16px; color:#1a237e;">👥 Estudiantes</h3>
-                <span class="badge" style="background:#e0f7fa; color:#00838f;">Directorio</span>
-            </div>
-            <p style="font-size:13px; color:#777; line-height:1.5;">
-                Directorio completo, agrupados por curso, ficha individual con historial. Descarga Excel.
-            </p>
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-top:12px;">
-                <span style="background:#e8f5e9; color:#2e7d32; font-size:11px; padding:3px 8px; border-radius:4px; font-weight:600;">Disponible</span>
-                <span style="font-size:14px; font-weight:600; color:#1a237e;">Ver →</span>
-            </div>
+    <a href="{% url 'academia:estudiantes_lista' %}" class="card-box">
+        <div class="card-header">
+            <div class="card-title">Estudiantes</div>
+            <div class="card-icon">👥</div>
+        </div>
+        <div class="card-desc">
+            Directorio completo con historial y exportación Excel.
+        </div>
+        <div class="card-footer">
+            <span class="status-ok">Disponible</span>
+            <span>Ingresar →</span>
         </div>
     </a>
     {% endif %}
 
-    {# ── Cursos Presenciales ────────────────────────────────── #}
-    <a href="{% url 'academia:cursos_lista' modalidad='presencial' %}" style="text-decoration:none; color:inherit;">
-        <div class="card-box" style="border-top: 4px solid #FFD700; cursor:pointer; transition: transform 0.15s;"
-             onmouseover="this.style.transform='translateY(-3px)'"
-             onmouseout="this.style.transform='translateY(0)'">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
-                <h3 style="font-size:16px; color:#1a237e;">Cursos Presenciales</h3>
-                <span class="badge badge-presencial">🏫</span>
-            </div>
-            <p style="font-size:13px; color:#777; line-height:1.5;">
-                {% if es_admin %}
-                    Gestión de cursos presenciales, categorías y jornadas.
-                {% else %}
-                    Consultar catálogo de cursos presenciales y sus jornadas.
-                {% endif %}
-            </p>
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-top:12px;">
-                <span style="background:#e8f5e9; color:#2e7d32; font-size:11px; padding:3px 8px; border-radius:4px; font-weight:600;">Disponible</span>
-                <span style="font-size:18px; font-weight:700; color:#1a237e;">{{ stats.total_cursos_presencial }}</span>
-            </div>
+    <a href="{% url 'academia:cursos_lista' modalidad='presencial' %}" class="card-box">
+        <div class="card-header">
+            <div class="card-title">Cursos Presenciales</div>
+            <div class="card-icon">🏫</div>
+        </div>
+        <div class="card-desc">
+            {% if es_admin %}
+                Gestión completa de cursos presenciales.
+            {% else %}
+                Consulta de cursos y horarios.
+            {% endif %}
+        </div>
+        <div class="card-footer">
+            <span class="status-ok">Disponible</span>
+            <span class="card-number">Total: {{ stats.total_cursos_presencial }}</span>
+             <span> →</span>
         </div>
     </a>
 
-    {# ── Cursos Online ──────────────────────────────────────── #}
-    <a href="{% url 'academia:cursos_lista' modalidad='online' %}" style="text-decoration:none; color:inherit;">
-        <div class="card-box" style="border-top: 4px solid #2e7d32; cursor:pointer; transition: transform 0.15s;"
-             onmouseover="this.style.transform='translateY(-3px)'"
-             onmouseout="this.style.transform='translateY(0)'">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
-                <h3 style="font-size:16px; color:#1a237e;">Cursos Online</h3>
-                <span class="badge badge-online">🟢</span>
-            </div>
-            <p style="font-size:13px; color:#777; line-height:1.5;">
-                {% if es_admin %}
-                    Gestión de cursos online con sus propios valores y jornadas virtuales.
-                {% else %}
-                    Consultar catálogo de cursos online y sus jornadas.
-                {% endif %}
-            </p>
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-top:12px;">
-                <span style="background:#e8f5e9; color:#2e7d32; font-size:11px; padding:3px 8px; border-radius:4px; font-weight:600;">Disponible</span>
-                <span style="font-size:18px; font-weight:700; color:#1a237e;">{{ stats.total_cursos_online }}</span>
-            </div>
+    <a href="{% url 'academia:cursos_lista' modalidad='online' %}" class="card-box">
+        <div class="card-header">
+            <div class="card-title">Cursos Online</div>
+            <div class="card-icon">💻</div>
+        </div>
+        <div class="card-desc">
+            {% if es_admin %}
+                Gestión de cursos virtuales.
+            {% else %}
+                Consulta del catálogo online.
+            {% endif %}
+        </div>
+        <div class="card-footer">
+            <span class="status-ok">Disponible</span>
+            <span class="card-number">{{ stats.total_cursos_online }}</span>
         </div>
     </a>
 
-    {# ── Pagos ──────────────────────────────────────────────── #}
     {% if puede_gestionar_matriculas %}
-    <a href="{% url 'academia:pagos_lista' %}" style="text-decoration:none; color:inherit;">
-        <div class="card-box" style="border-top: 4px solid #c62828; cursor:pointer; transition: transform 0.15s;"
-             onmouseover="this.style.transform='translateY(-3px)'"
-             onmouseout="this.style.transform='translateY(0)'">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
-                <h3 style="font-size:16px; color:#1a237e;">💳 Pagos</h3>
-                <span class="badge badge-parcial">Financiero</span>
-            </div>
-            <p style="font-size:13px; color:#777; line-height:1.5;">
-                Estado de cobros: pagados, parciales y pendientes. Buscador por curso. Descarga Excel.
-            </p>
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-top:12px;">
-                <span style="background:#e8f5e9; color:#2e7d32; font-size:11px; padding:3px 8px; border-radius:4px; font-weight:600;">Disponible</span>
-                <span style="font-size:14px; font-weight:600; color:#1a237e;">Ver →</span>
-            </div>
+    <a href="{% url 'academia:pagos_lista' %}" class="card-box">
+        <div class="card-header">
+            <div class="card-title">Pagos</div>
+            <div class="card-icon">💳</div>
+        </div>
+        <div class="card-desc">
+            Control de pagos, estados y reportes.
+        </div>
+        <div class="card-footer">
+            <span class="status-ok">Disponible</span>
+            <span>Ingresar →</span>
+        </div>
+    </a>
+
+    <a href="{% url 'academia:comprobante_menu' %}" class="card-box">
+        <div class="card-header">
+            <div class="card-title">Comprobantes</div>
+            <div class="card-icon">🧾</div>
+        </div>
+        <div class="card-desc">
+            Registro de ventas y ranking de asesoras.
+        </div>
+        <div class="card-footer">
+            <span class="status-ok">Disponible</span>
+            <span>Ingresar →</span>
+        </div>
+    </a>
+
+    <a href="{% url 'academia:historial_lista' %}" class="card-box">
+        <div class="card-header">
+            <div class="card-title">Historial</div>
+            <div class="card-icon">📚</div>
+        </div>
+        <div class="card-desc">
+            Matrículas organizadas por año y mes.
+        </div>
+        <div class="card-footer">
+            <span class="status-ok">Disponible</span>
+            <span>Ingresar →</span>
         </div>
     </a>
     {% endif %}
 
-    {# ── Comprobantes de Venta ─────────────────────────── #}
-    {% if puede_gestionar_matriculas %}
-    <a href="{% url 'academia:comprobante_menu' %}" style="text-decoration:none; color:inherit;">
-        <div class="card-box" style="border-top: 4px solid #f0ad4e; cursor:pointer; transition: transform 0.15s;"
-             onmouseover="this.style.transform='translateY(-3px)'"
-             onmouseout="this.style.transform='translateY(0)'">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
-                <h3 style="font-size:16px; color:#1a237e;">🧾 Comprobante</h3>
-                <span class="badge" style="background:#fff3cd; color:#856404;">Ventas</span>
-            </div>
-            <p style="font-size:13px; color:#777; line-height:1.5;">
-                Registrar comprobantes de venta y consultar el ranking de asesoras
-                con totales por vendedora.
-            </p>
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-top:12px;">
-                <span style="background:#e8f5e9; color:#2e7d32; font-size:11px; padding:3px 8px; border-radius:4px; font-weight:600;">Disponible</span>
-                <span style="font-size:14px; font-weight:600; color:#1a237e;">Ver →</span>
-            </div>
-        </div>
-    </a>
-    {% endif %}
-
-     {# ── Historial de matriculados ─────────────────────────── #}
-    {% if puede_gestionar_matriculas %}
-    <a href="{% url 'academia:historial_lista' %}" style="text-decoration:none; color:inherit;">
-        <div class="card-box" style="border-top: 4px solid #6a1b9a; cursor:pointer; transition: transform 0.15s;"
-             onmouseover="this.style.transform='translateY(-3px)'"
-             onmouseout="this.style.transform='translateY(0)'">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
-                <h3 style="font-size:16px; color:#1a237e;">📚 Historial</h3>
-                <span class="badge" style="background:#f3e5f5; color:#6a1b9a;">Año / Mes</span>
-            </div>
-            <p style="font-size:13px; color:#777; line-height:1.5;">
-                Matrículas organizadas por año y mes. Descarga reportes anuales en Excel.
-            </p>
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-top:12px;">
-                <span style="background:#e8f5e9; color:#2e7d32; font-size:11px; padding:3px 8px; border-radius:4px; font-weight:600;">Disponible</span>
-                <span style="font-size:14px; font-weight:600; color:#1a237e;">Ver →</span>
-            </div>
-        </div>
-    </a>
-    {% endif %}
-
-     {# ── Registro Administrativo (solo admin) ───────────────── #}
     {% if es_admin %}
-        <a href="{% url 'academia:admin_dashboard' %}" style="text-decoration:none; color:inherit;">
-            <div class="card-box" style="border-top: 4px solid #c62828; cursor:pointer; transition: transform 0.15s;"
-                 onmouseover="this.style.transform='translateY(-3px)'"
-                 onmouseout="this.style.transform='translateY(0)'">
-                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
-                    <h3 style="font-size:16px; color:#1a237e;">📊 Registro Administrativo</h3>
-                    <span class="badge" style="background:#ffebee; color:#c62828;">🔒 Admin</span>
-                </div>
-                <p style="font-size:13px; color:#777; line-height:1.5;">
-                    Balance financiero mensual: ingresos, egresos, ganancia/pérdida y gráficos.
-                </p>
-                <div style="display:flex; justify-content:space-between; align-items:center; margin-top:12px;">
-                    <span style="background:#e8f5e9; color:#2e7d32; font-size:11px; padding:3px 8px; border-radius:4px; font-weight:600;">Disponible</span>
-                    <span style="font-size:11px; color:#888;">Solo administradores</span>
-                </div>
-            </div>
-        </a>
+    <a href="{% url 'academia:admin_dashboard' %}" class="card-box">
+        <div class="card-header">
+            <div class="card-title">Registro Administrativo</div>
+            <div class="card-icon">📊</div>
+        </div>
+        <div class="card-desc">
+            Control financiero mensual con métricas.
+        </div>
+        <div class="card-footer">
+            <span class="status-ok">Admin</span>
+            <span>🔒</span>
+        </div>
+    </a>
     {% endif %}
-    {# ── Ayuda ──────────────────────────────────────── #}
+
     {% if puede_gestionar_matriculas %}
-    <a href="{% url 'academia:ayuda' %}" style="text-decoration:none; color:inherit;">
-        <div class="card-box" style="border-top: 4px solid #FFD700; cursor:pointer; transition: transform 0.15s;"
-             onmouseover="this.style.transform='translateY(-3px)'"
-             onmouseout="this.style.transform='translateY(0)'">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
-                <h3 style="font-size:16px; color:#1a237e;"> Ayuda </h3>
-                <span class="badge" style="background:#fff8e1; color:#856404;">Ventas</span>
-            </div>
-            <p style="font-size:13px; color:#777; line-height:1.5;">
-                Manuales y soporte del sistema.
-            </p>
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-top:12px;">
-                <span style="background:#e8f5e9; color:#2e7d32; font-size:11px; padding:3px 8px; border-radius:4px; font-weight:600;">Disponible</span>
-                <span style="font-size:14px; font-weight:600; color:#1a237e;">Ver →</span>
-            </div>
+    <a href="{% url 'academia:ayuda' %}" class="card-box">
+        <div class="card-header">
+            <div class="card-title">Ayuda</div>
+            <div class="card-icon">❓</div>
+        </div>
+        <div class="card-desc">
+            Manuales y soporte del sistema.
+        </div>
+        <div class="card-footer">
+            <span class="status-ok">Disponible</span>
+            <span>Ingresar →</span>
         </div>
     </a>
     {% endif %}
@@ -213,12 +322,9 @@
 </div>
 
 {% if not puede_gestionar_matriculas and not es_admin %}
-    <div style="margin-top:32px; text-align:center; padding:24px; background:#fff8e1; border-radius:10px; color:#856404;">
-        <p style="font-size:14px;">
-            ⚠ Tu usuario no tiene un rol asignado. Pide a un administrador que te agregue
-            al grupo <strong>Administradores</strong> o <strong>Asesores</strong> desde
-            el panel de administración.
-        </p>
-    </div>
+<div class="alert-box">
+    ⚠ Tu usuario no tiene rol asignado. Solicita acceso a un administrador.
+</div>
 {% endif %}
+
 {% endblock %}

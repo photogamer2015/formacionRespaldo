@@ -5,35 +5,17 @@
 {% block content %}
 <div class="crumb">
     <a href="{% url 'academia:bienvenida' %}">Inicio</a> &nbsp;›&nbsp;
-    Matrícula {{ modalidad_label }}
+    Matrícula 
 </div>
 
 <h2 class="page-title">
     {% if modalidad == 'online' %}🟢{% else %}🏫{% endif %}
-    Matrícula {{ modalidad_label }}
+    Registro de Matrícula 
 </h2>
 <p class="page-subtitle">
-    Registrar y administrar matrículas {{ modalidad_label|lower }}.
+    Registrar y administrar matrículas<br>
     Total registradas: <strong>{{ total }}</strong>
 </p>
-
-{# Tabs entre modalidades #}
-<div class="modalidad-tabs">
-    <a href="{% url 'academia:matricula_menu' modalidad='presencial' %}"
-       class="{% if modalidad == 'presencial' %}active{% endif %}">
-        🏫 Presencial
-    </a>
-    {% if matricula_online_habilitada %}
-    <a href="{% url 'academia:matricula_menu' modalidad='online' %}"
-       class="{% if modalidad == 'online' %}active{% endif %}">
-        🟢 Online
-    </a>
-    {% else %}
-    <span style="padding: 8px 22px; color: #aaa; font-size: 14px; font-weight: 600; cursor: not-allowed;" title="Disponible próximamente vía Google Forms">
-        🟢 Online <small style="font-weight:400;">(próximamente)</small>
-    </span>
-    {% endif %}
-</div>
 
 <hr>
 
@@ -54,7 +36,7 @@
             <div style="font-size:32px; margin-bottom:8px;">≡</div>
             <h3 style="color:#1a237e; font-size:17px; margin-bottom:6px;">Lista de Matriculados</h3>
             <p style="color:#666; font-size:13px;">
-                Ver todos los estudiantes matriculados {{ modalidad_label|lower }} con sus
+                Ver todos los estudiantes matriculados con sus
                 datos, cursos, valores y saldos.
             </p>
         </div>

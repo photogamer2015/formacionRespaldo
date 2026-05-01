@@ -87,9 +87,7 @@ def _egresos_por_categoria_periodo(desde, hasta):
     ]
 
 
-# ─────────────────────────────────────────────────────────
-# Dashboard principal
-# ─────────────────────────────────────────────────────────
+
 
 @admin_requerido
 def admin_dashboard(request):
@@ -209,10 +207,6 @@ def admin_dashboard(request):
         'serie_meses_json': json.dumps(serie_meses),
     })
 
-
-# ─────────────────────────────────────────────────────────
-# CRUD de egresos
-# ─────────────────────────────────────────────────────────
 
 @admin_requerido
 def egresos_lista(request):

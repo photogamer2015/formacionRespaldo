@@ -5,23 +5,22 @@
 {% block content %}
 <div class="crumb">
     <a href="{% url 'academia:bienvenida' %}">Inicio</a> &nbsp;›&nbsp;
-    <a href="{% url 'academia:matricula_menu' modalidad=modalidad %}">Matrícula {{ modalidad_label }}</a> &nbsp;›&nbsp;
+    <a href="{% url 'academia:matricula_menu' modalidad=modalidad %}">Matrícula</a> &nbsp;›&nbsp;
     Lista
 </div>
 
 <h2 class="page-title">
-    Matriculados {{ modalidad_label }}
+    Matriculados 
     <span class="badge badge-{{ modalidad }}" style="font-size:11px; vertical-align:middle;">
-        {% if modalidad == 'online' %}🟢 Online{% else %}🏫 Presencial{% endif %}
+        {% if modalidad == 'online' %}🟢 Online{% else %}{% endif %}
     </span>
 </h2>
 <p class="page-subtitle">Total: {{ matriculas.count }} matrícula{{ matriculas.count|pluralize }}.</p>
 
-{# Tabs entre modalidades #}
 <div class="modalidad-tabs">
     <a href="{% url 'academia:matricula_lista' modalidad='presencial' %}"
        class="{% if modalidad == 'presencial' %}active{% endif %}">
-        🏫 Presencial
+        🏫 Listas
     </a>
     {% if matricula_online_habilitada %}
     <a href="{% url 'academia:matricula_lista' modalidad='online' %}"
@@ -29,9 +28,6 @@
         🟢 Online
     </a>
     {% else %}
-    <span style="padding: 8px 22px; color: #aaa; font-size: 14px; font-weight: 600; cursor: not-allowed;" title="Disponible próximamente vía Google Forms">
-        🟢 Online <small style="font-weight:400;">(próximamente)</small>
-    </span>
     {% endif %}
 </div>
 

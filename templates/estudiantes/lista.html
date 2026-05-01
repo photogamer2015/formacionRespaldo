@@ -18,13 +18,12 @@
     </div>
 </div>
 
-{# ─── Tabs ─── #}
+
 <div class="modalidad-tabs">
     <a href="{% url 'academia:estudiantes_lista' %}" class="active">📋 Listado completo</a>
     <a href="{% url 'academia:estudiantes_por_curso' %}">📚 Agrupados por curso</a>
 </div>
 
-{# ─── Buscador ─── #}
 <div class="card-box" style="margin-bottom:18px; padding:14px;">
     <form method="get" style="display:flex; gap:10px; align-items:center;">
         <input type="text" name="q" value="{{ q }}" placeholder="Buscar por cédula, nombre, correo o celular…"
@@ -36,7 +35,6 @@
     </form>
 </div>
 
-{# ─── Tabla ─── #}
 <div class="table-wrap">
     {% if estudiantes %}
     <table>

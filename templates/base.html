@@ -22,14 +22,47 @@
             align-items: center;
             box-shadow: 0 2px 8px rgba(0,0,0,0.1);
         }
-        header.top .brand { display: flex; align-items: center; gap: 12px; }
+        header.top h1 {
+            font-size: 18px; /* Ligeramente más grande */
+            font-weight: 600; /* Un poco más de grosor para que se vea profesional */
+            letter-spacing: -0.3px; /* Espaciado más moderno */
+            margin: 0;
+            padding: 0;
+        }
+        header.top .logo-circle {
+            width: 42px;
+            height: 42px;
+    
+            border-radius: 50%;
+    
+            object-fit: cover;
+    
+          
+            background: #ffffff;
+            padding: 2px;
+            border: 2px solid #f97618; /* Borde dorado sutil que combina con los badges */
+    
+
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    
+          
+            margin: 0 !important; 
+    
+            
+            display: block;
+        }
+
+        header.top .brand {
+            display: flex;
+            align-items: center;
+            gap: 15px; /* Un poco más de espacio entre logo y texto */
+        }  }
         .logo-mini {
             width: 36px; height: 36px; border-radius: 50%;
             background: #FFD700; color: #1a237e;
             display: flex; align-items: center; justify-content: center;
             font-weight: 700; font-size: 14px;
         }
-        header.top h1 { font-size: 16px; font-weight: 500; }
         header.top nav { display: flex; gap: 8px; align-items: center; }
         header.top a, header.top button {
             color: white; text-decoration: none;
@@ -40,18 +73,42 @@
         }
         header.top a:hover, header.top button:hover { background: rgba(255,255,255,0.28); }
         header.top form { margin: 0; display: inline; }
+
         header.top .user-info {
-            display: flex; flex-direction: column; align-items: flex-end;
-            gap: 2px; font-size: 12px; padding: 0 6px;
+            display: flex; 
+            flex-direction: column; 
+            align-items: flex-end; 
+            justify-content: center; 
+            gap: 5px; 
+            padding-right: 20px; 
+            margin-right: 20px; 
+            border-right: 2px solid rgba(255, 255, 255, 0.25); /* Línea divisoria elegante */
+            border-right: 2px solid rgba(255, 255, 255, 0.25); /* Línea divisoria elegante */
+
+        }
+        header.top .user-info h3 {
+            margin: 0;
+            padding: 0;
+            font-size: 15px; /* Tamaño ideal, ni muy grande ni muy chico */
+            font-weight: 600;
+            color: #ffffff;
+            line-height: 1; /* Evita espacios extra arriba y abajo del texto */
+            letter-spacing: 0.3px;
         }
         header.top .role-badge {
-            display: inline-block; padding: 1px 8px; border-radius: 10px;
-            font-size: 10px; font-weight: 700; letter-spacing: 0.3px;
+            display: inline-block; 
+            padding: 3px 9px; 
+            border-radius: 12px; /* Más redondito */
+            font-size: 10px; 
+            font-weight: 800; /* Letra más gordita y legible */
+            letter-spacing: 0.5px;
             text-transform: uppercase;
+            line-height: 1;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.15); /* Una sombra muy sutil */
         }
-        .role-admin   { background: #FFD700; color: #1a237e; }
-        .role-asesor  { background: #2e7d32; color: white; }
-        .role-default { background: rgba(255,255,255,0.25); color: white; }
+        .role-admin   { background: #ff7700; color: #ffffff; }
+        .role-asesor  { background: #377d2e; color: white; }
+        .role-default { background: rgba(255, 255, 255, 0.94); color: white; }
 
         .container { max-width: 1200px; margin: 0 auto; padding: 32px 24px; }
 
@@ -110,7 +167,7 @@
             font-size: 12px; margin-top: 4px;
         }
 
-        /* Radio group bonito (jornada y talla) */
+      
         .radio-group {
             display: flex; flex-direction: column; gap: 8px;
             background: #fafafa;
@@ -185,7 +242,6 @@
             margin: 0 auto 16px;
         }
 
-        /* Tabs Presencial / Online */
         .modalidad-tabs {
             display: flex; gap: 4px;
             background: #e8eaf6;
@@ -236,9 +292,9 @@
         <nav>
             {% if user.is_authenticated %}
                 <div class="user-info">
-                    <span>{{ user.first_name|default:user.username }}</span>
+                    <h3>{{ user.first_name|default:user.username }}</h3>
                     {% if es_admin %}
-                        <span class="role-badge role-admin">★ Administrador</span>
+                        <span class="role-badge role-admin">Administrador</span>
                     {% elif es_asesor %}
                         <span class="role-badge role-asesor">Asesor</span>
                     {% else %}
@@ -246,16 +302,12 @@
                     {% endif %}
                 </div>
                 <a href="{% url 'academia:bienvenida' %}">Inicio</a>
-                <a href="{% url 'academia:cursos_lista' modalidad='presencial' %}">Cursos</a>
-                {% if puede_gestionar_matriculas %}
-                    <a href="{% url 'academia:comprobante_menu' %}">🧾 Comprobantes</a>
-                {% endif %}
                 {% if es_admin %}
-                    <a href="/admin/" title="Panel administrativo de Django">⚙</a>
+                    <a href="/admin/" title="Panel administrativo de Django">Dashboard Admin</a>
                 {% endif %}
                 <form method="post" action="{% url 'logout' %}">
                     {% csrf_token %}
-                    <button type="submit">Cerrar sesión</button>
+                    <button type="submit" style="background: #dc3545; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer;">Cerrar sesión</button>
                 </form>
             {% endif %}
         </nav>

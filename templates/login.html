@@ -5,105 +5,168 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Iniciar sesión — Formación Profesional EC</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
+        
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
-            background: linear-gradient(135deg, #1a237e 0%, #283593 100%);
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #1a237e 50%, #283593 100%);
             min-height: 100vh;
             display: flex;
             align-items: center;
             justify-content: center;
             padding: 20px;
         }
+
         .login-card {
-            background: white;
-            border-radius: 12px;
+            background: #ffffff;
+            border-radius: 24px;
             padding: 48px 40px;
             width: 100%;
             max-width: 420px;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1), 0 20px 48px rgba(0,0,0,0.2);
+            border: 1px solid rgba(255,255,255,0.2);
         }
+
         .logo-area {
             text-align: center;
-            margin-bottom: 32px;
+            margin-bottom: 36px;
         }
+
         .logo-circle {
-            width: 80px;
-            height: 80px;
+            width: 88px;
+            height: 88px;
             border-radius: 50%;
             background: #ffffff;
-            color:  #d7642f;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 32px;
-            font-weight: 700;
-            margin: 0 auto 16px;
+            object-fit: cover;
+            padding: 4px;
+            border: 3px solid #fdae11;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+            margin: 0 auto 20px;
+            display: block;
+            transition: transform 0.3s ease;
         }
+
+        .logo-circle:hover {
+            transform: scale(1.05);
+        }
+
         h1 {
-            font-size: 20px;
+            font-size: 22px;
             color: #1a237e;
-            font-weight: 600;
-            margin-bottom: 4px;
+            font-weight: 700;
+            margin-bottom: 6px;
+            letter-spacing: -0.5px;
         }
+
         .subtitle {
-            color: #666;
-            font-size: 13px;
+            color: #64748b;
+            font-size: 14px;
+            font-weight: 400;
         }
+
         .form-group {
-            margin-bottom: 18px;
+            margin-bottom: 20px;
         }
+
         label {
             display: block;
-            font-size: 13px;
+            font-size: 13.5px;
             font-weight: 600;
-            color: #444;
-            margin-bottom: 6px;
+            color: #334155;
+            margin-bottom: 8px;
         }
-        input[type="text"], input[type="password"] {
+
+        input[type="text"], 
+        input[type="password"] {
             width: 100%;
-            padding: 12px 14px;
-            border: 2px solid #e0e0e0;
-            border-radius: 8px;
+            padding: 14px 16px;
+            border: 1px solid #cbd5e1;
+            border-radius: 10px;
             font-size: 15px;
-            transition: border 0.2s;
+            background: #f8fafc;
+            color: #0f172a;
+            transition: all 0.3s ease;
+            font-family: inherit;
         }
+
         input:focus {
             outline: none;
             border-color: #1a237e;
+            background: #ffffff;
+            box-shadow: 0 0 0 4px rgba(26, 35, 126, 0.15);
         }
+
         button {
             width: 100%;
             padding: 14px;
             background: #1a237e;
             color: white;
             border: none;
-            border-radius: 8px;
+            border-radius: 10px;
             font-size: 15px;
             font-weight: 600;
             cursor: pointer;
-            margin-top: 8px;
-            transition: background 0.2s;
+            margin-top: 10px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 12px rgba(26, 35, 126, 0.25);
         }
-        button:hover { background: #283593; }
+
+        button:hover { 
+            background: #d7642f;
+            box-shadow: 0 6px 16px rgba(215, 100, 47, 0.3);
+            transform: translateY(-1px);
+        }
+        
+        button:active {
+            transform: translateY(1px);
+        }
+
         .error {
-            background: #ffebee;
-            color: #c62828;
-            padding: 10px 14px;
-            border-radius: 6px;
-            font-size: 13px;
-            margin-bottom: 16px;
-            border-left: 3px solid #c62828;
+            background: #fef2f2;
+            color: #991b1b;
+            padding: 14px 16px;
+            border-radius: 10px;
+            font-size: 13.5px;
+            font-weight: 500;
+            margin-bottom: 24px;
+            border-left: 4px solid #ef4444;
+            animation: shake 0.4s ease-in-out;
         }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            50% { transform: translateX(5px); }
+            75% { transform: translateX(-5px); }
+        }
+
         .footer {
             text-align: center;
-            margin-top: 28px;
-            font-size: 12px;
-            color: #999;
+            margin-top: 32px;
+            font-size: 13px;
+            font-weight: 500;
         }
-        button:hover {
-            background:  #d7642f;
+
+        .footer a {
+            color: #64748b;
+            text-decoration: none;
+            transition: color 0.2s ease;
+            display: inline-block;
+            margin-bottom: 8px;
+        }
+
+        .footer a:hover {
+            color: #d7642f;
+        }
+        
+        .footer-divider {
+            display: inline-block;
+            margin: 0 8px;
+            color: #cbd5e1;
         }
     </style>
 </head>
@@ -125,20 +188,19 @@
             {% csrf_token %}
             <div class="form-group">
                 <label for="id_username">Usuario</label>
-                <input type="text" name="username" id="id_username" autofocus required>
+                <input type="text" name="username" id="id_username" placeholder="Ingresa tu usuario" autofocus required>
             </div>
             <div class="form-group">
                 <label for="id_password">Contraseña</label>
-                <input type="password" name="password" id="id_password" required>
+                <input type="password" name="password" id="id_password" placeholder="••••••••" required>
             </div>
             <button type="submit">Iniciar sesión</button>
         </form>
-        
 
         <div class="footer">
-
-            <a href=https://formacionprofessional.com/ target="_blank" style="color: #1a237e; text-decoration: none; margin-left: 8px;">www.formacionprofesional.ec</a><br><br>
-            <a href="https://github.com/photogamer2015" target="_blank" style="color: #1a237e; text-decoration: none; margin-left: 8px;">Documentación</a>
+            <a href="https://formacionprofessional.com/" target="_blank">www.formacionprofesional.ec</a>
+            <span class="footer-divider">•</span>
+            <a href="https://github.com/photogamer2015" target="_blank">Documentación</a>
         </div>
     </div>
 </body>
